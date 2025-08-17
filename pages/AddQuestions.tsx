@@ -4,13 +4,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAnalytics } from '../context/AnalyticsContext';
 import { MBBS_SUBJECTS, PLATFORMS } from '../data/constants';
 import { Batch, ParsedMCQ, MCQ } from '../types';
-import { ArrowLeft, LoaderCircle, CheckCircle, Wand, Edit } from 'lucide-react';
+import { ArrowLeft, LoaderCircle, CheckCircle, Wand, Edit, PlusCircle, Trash2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
+import { cn } from '../lib/utils';
 
 const AddQuestions: React.FC = () => {
   const navigate = useNavigate();
@@ -25,7 +26,6 @@ const AddQuestions: React.FC = () => {
   const [manualMCQs, setManualMCQs] = useState<ParsedMCQ[]>([]);
   const [currentMCQ, setCurrentMCQ] = useState<ParsedMCQ>({ question: '', options: ['', '', '', ''], answer: '', explanation: '' });
   const [manualError, setManualError] = useState<string | null>(null);
-
 
   // Common State
   const [subject, setSubject] = useState(MBBS_SUBJECTS[0]);
@@ -115,28 +115,31 @@ const AddQuestions: React.FC = () => {
     if (!questionsToPreview || questionsToPreview.length === 0) return null;
 
     return (
-      <Card>
+      <Card className="glass-card glow-border">
         <CardHeader>
-          <CardTitle>Import Preview ({questionsToPreview.length} questions)</CardTitle>
+          <CardTitle className="text-2xl">Import Preview ({questionsToPreview.length} questions)</CardTitle>
         </CardHeader>
         <CardContent>
-            <div className="space-y-4 max-h-[50vh] overflow-y-auto p-4 bg-muted/50 rounded-lg border">
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto p-4 bg-black/20 rounded-lg border border-white/10">
                 {questionsToPreview.map((mcq, index) => (
-                    <Card key={index} className="p-4 bg-background">
-                    <p className="font-semibold text-foreground">{index + 1}. {mcq.question}</p>
-                    <ul className="list-disc list-inside ml-4 mt-2 text-muted-foreground">
-                        {mcq.options.map((opt, i) => (
-                        <li key={i} className={opt === mcq.answer ? 'font-bold text-green-600 dark:text-green-400' : ''}>{opt}</li>
-                        ))}
-                    </ul>
-                    <p className="mt-2 text-sm text-foreground bg-muted p-2 rounded"><span className="font-semibold">Explanation:</span> {mcq.explanation}</p>
-                    </Card>
+                    <div key={index} className="p-4 bg-white/5 rounded-lg border border-white/10">
+                      <p className="font-semibold text-foreground">{index + 1}. {mcq.question}</p>
+                      <ul className="list-disc list-inside ml-4 mt-2 text-muted-foreground">
+                          {mcq.options.map((opt, i) => (
+                          <li key={i} className={cn(opt === mcq.answer ? 'font-bold text-secondary' : '')}>{opt}</li>
+                          ))}
+                      </ul>
+                      <p className="mt-3 text-sm text-foreground bg-black/20 p-3 rounded"><span className="font-semibold text-secondary">Explanation:</span> {mcq.explanation}</p>
+                    </div>
                 ))}
             </div>
         </CardContent>
         <CardFooter className="flex justify-end gap-4">
-             <Button variant="outline" onClick={() => addMode === 'ai' ? setParsedMCQs(null) : setManualMCQs([])}>Back to Edit</Button>
-            <Button onClick={handleSaveBatch} className="bg-green-600 hover:bg-green-700">
+             <Button variant="outline" className="glass-card" onClick={() => addMode === 'ai' ? setParsedMCQs(null) : setManualMCQs([])}>
+                <Edit size={16} className="mr-2"/>
+                Back to Edit
+             </Button>
+            <Button onClick={handleSaveBatch} className="btn-gradient">
                 <CheckCircle size={20} className="mr-2"/>
                 Confirm and Save Batch
             </Button>
@@ -146,63 +149,53 @@ const AddQuestions: React.FC = () => {
   };
   
   const renderAiForm = () => (
-    <Card>
+    <Card className="glass-card glow-border">
       <CardContent className="space-y-6 pt-6">
         <div className="space-y-2">
-            <Label htmlFor="raw-text">MCQ Content</Label>
+            <Label htmlFor="raw-text" className="text-lg">Paste MCQ Content</Label>
             <Textarea
-            id="raw-text"
-            rows={15}
-            value={rawText}
-            onChange={e => setRawText(e.target.value)}
-            placeholder="Paste your block of questions, options, answers, and explanations here..."
-            className="font-mono"
+              id="raw-text"
+              rows={15}
+              value={rawText}
+              onChange={e => setRawText(e.target.value)}
+              placeholder="Paste your block of questions, options, answers, and explanations here... The AI will do the rest."
+              className="font-mono bg-black/20 border-white/10 focus:border-primary"
             />
         </div>
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-sm text-destructive bg-destructive/20 p-3 rounded-md">{error}</p>}
       </CardContent>
       <CardFooter className="flex justify-end">
          <Button
           onClick={handleProcess}
           disabled={isLoading}
-          className="w-48"
+          className="btn-gradient w-48"
         >
-          {isLoading ? <LoaderCircle className="animate-spin" size={20} /> : 'Process with AI'}
+          {isLoading ? <LoaderCircle className="animate-spin" size={20} /> : <><Wand size={18} className="mr-2"/> Process with AI</>}
         </Button>
       </CardFooter>
     </Card>
   );
 
   const renderManualForm = () => (
-    <Card>
+    <Card className="glass-card glow-border">
       <CardContent className="space-y-6 pt-6">
         <div className="space-y-2">
-          <Label htmlFor="question">Question</Label>
-          <Textarea id="question" value={currentMCQ.question} onChange={e => setCurrentMCQ(p => ({ ...p, question: e.target.value }))} />
+          <Label htmlFor="question" className="text-lg">Question</Label>
+          <Textarea id="question" value={currentMCQ.question} onChange={e => setCurrentMCQ(p => ({ ...p, question: e.target.value }))} className="bg-black/20 border-white/10" />
         </div>
         <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-                <Label>Option A</Label>
-                <Input value={currentMCQ.options[0]} onChange={e => { const o = [...currentMCQ.options]; o[0] = e.target.value; setCurrentMCQ(p => ({...p, options: o})) }} />
-            </div>
-            <div className="space-y-2">
-                <Label>Option B</Label>
-                <Input value={currentMCQ.options[1]} onChange={e => { const o = [...currentMCQ.options]; o[1] = e.target.value; setCurrentMCQ(p => ({...p, options: o})) }} />
-            </div>
-            <div className="space-y-2">
-                <Label>Option C</Label>
-                <Input value={currentMCQ.options[2]} onChange={e => { const o = [...currentMCQ.options]; o[2] = e.target.value; setCurrentMCQ(p => ({...p, options: o})) }} />
-            </div>
-            <div className="space-y-2">
-                <Label>Option D</Label>
-                <Input value={currentMCQ.options[3]} onChange={e => { const o = [...currentMCQ.options]; o[3] = e.target.value; setCurrentMCQ(p => ({...p, options: o})) }} />
-            </div>
+            {[...Array(4)].map((_, i) => (
+              <div className="space-y-2" key={i}>
+                  <Label>Option {String.fromCharCode(65 + i)}</Label>
+                  <Input value={currentMCQ.options[i]} onChange={e => { const o = [...currentMCQ.options]; o[i] = e.target.value; setCurrentMCQ(p => ({...p, options: o})) }} className="bg-black/20 border-white/10" />
+              </div>
+            ))}
         </div>
         <div className="space-y-2">
             <Label>Correct Answer</Label>
             <Select value={currentMCQ.answer} onValueChange={value => setCurrentMCQ(p => ({...p, answer: value}))}>
-                <SelectTrigger><SelectValue placeholder="Select the correct answer" /></SelectTrigger>
+                <SelectTrigger className="bg-black/20 border-white/10"><SelectValue placeholder="Select the correct answer" /></SelectTrigger>
                 <SelectContent>
                     {currentMCQ.options.filter(o => o.trim() !== '').map((opt, i) => (
                         <SelectItem key={i} value={opt}>{opt}</SelectItem>
@@ -211,24 +204,28 @@ const AddQuestions: React.FC = () => {
             </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="explanation">Explanation</Label>
-          <Textarea id="explanation" value={currentMCQ.explanation} onChange={e => setCurrentMCQ(p => ({ ...p, explanation: e.target.value }))} />
+          <Label htmlFor="explanation" className="text-lg">Explanation</Label>
+          <Textarea id="explanation" value={currentMCQ.explanation} onChange={e => setCurrentMCQ(p => ({ ...p, explanation: e.target.value }))} className="bg-black/20 border-white/10" />
         </div>
-        {manualError && <p className="text-sm text-destructive">{manualError}</p>}
+        {manualError && <p className="text-sm text-destructive bg-destructive/20 p-3 rounded-md">{manualError}</p>}
       </CardContent>
-      <CardFooter className="flex justify-end">
-        <Button onClick={handleAddManualMCQ}>Add Question to Batch</Button>
+      <CardFooter className="flex justify-between items-center">
+        <div className="text-sm text-muted-foreground">{manualMCQs.length} question(s) added to batch</div>
+        <Button onClick={handleAddManualMCQ} variant="outline" className="glass-card">
+          <PlusCircle size={16} className="mr-2" />
+          Add Question to Batch
+        </Button>
       </CardFooter>
     </Card>
   );
 
   const renderTopForm = () => (
-    <Card>
+    <Card className="glass-card glow-border">
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
              <div className="space-y-2">
                 <Label htmlFor="subject">Subject</Label>
                 <Select value={subject} onValueChange={setSubject}>
-                    <SelectTrigger id="subject"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="subject" className="bg-black/20 border-white/10"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         {MBBS_SUBJECTS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                     </SelectContent>
@@ -236,12 +233,12 @@ const AddQuestions: React.FC = () => {
             </div>
             <div className="space-y-2">
                 <Label htmlFor="chapter">Chapter Name</Label>
-                <Input id="chapter" value={chapter} onChange={e => setChapter(e.target.value)} placeholder="e.g., Embryology" />
+                <Input id="chapter" value={chapter} onChange={e => setChapter(e.target.value)} placeholder="e.g., Embryology" className="bg-black/20 border-white/10"/>
             </div>
             <div className="space-y-2">
                 <Label htmlFor="platform">Platform</Label>
                  <Select value={platform} onValueChange={setPlatform}>
-                    <SelectTrigger id="platform"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="platform" className="bg-black/20 border-white/10"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         {PLATFORMS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                     </SelectContent>
@@ -254,22 +251,36 @@ const AddQuestions: React.FC = () => {
   const showPreview = (addMode === 'ai' && parsedMCQs && parsedMCQs.length > 0) || (addMode === 'manual' && manualMCQs.length > 0);
 
   return (
-    <div className="animate-fade-in max-w-4xl mx-auto space-y-6">
+    <div className="animate-fade-in max-w-4xl mx-auto space-y-8 pb-12">
         <div>
-            <Button variant="ghost" onClick={() => navigate('/bank')} className="flex items-center gap-2 text-sm mb-4">
+            <Button variant="ghost" onClick={() => navigate('/bank')} className="flex items-center gap-2 text-sm mb-4 hover:bg-white/10">
                 <ArrowLeft size={16} />
                 Back to Bank
             </Button>
             <h1 className="text-5xl font-bold gradient-text">Add New Questions</h1>
-            <p className="text-muted-foreground mt-2">Add questions by pasting text for AI processing or by entering them manually.</p>
+            <p className="text-muted-foreground mt-2 text-lg">
+              Use the AI Paste for rapid import, or enter questions one-by-one with Manual Entry.
+            </p>
         </div>
 
-        <div className="flex gap-2">
-            <Button onClick={() => setAddMode('ai')} variant={addMode === 'ai' ? 'default' : 'outline'} className="flex-1 sm:flex-initial sm:flex-grow-0">
+        <div className="flex gap-2 p-1 rounded-full bg-black/20 border border-white/10 w-full max-w-sm mx-auto">
+            <Button
+              onClick={() => setAddMode('ai')}
+              className={cn(
+                "w-full rounded-full transition-all duration-300",
+                addMode === 'ai' ? 'btn-gradient' : 'bg-transparent text-muted-foreground hover:bg-white/10'
+              )}
+            >
                 <Wand size={16} className="mr-2" />
                 AI Paste
             </Button>
-            <Button onClick={() => setAddMode('manual')} variant={addMode === 'manual' ? 'default' : 'outline'} className="flex-1 sm:flex-initial sm:flex-grow-0">
+            <Button
+              onClick={() => setAddMode('manual')}
+              className={cn(
+                "w-full rounded-full transition-all duration-300",
+                addMode === 'manual' ? 'btn-gradient' : 'bg-transparent text-muted-foreground hover:bg-white/10'
+              )}
+            >
                 <Edit size={16} className="mr-2" />
                 Manual Entry
             </Button>

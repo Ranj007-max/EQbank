@@ -6,65 +6,58 @@
  
 @layer base {
   :root {
-    --background: 0 0% 97.6%; /* #f9f9f9 */
-    --foreground: 240 10% 3.9%;
+    --background: 222 84% 4%; /* Unified background for effect */
+    --foreground: 210 40% 98%;
     
-    --card: 0 0% 100%; /* #ffffff */
-    --card-foreground: 240 10% 3.9%;
+    --card: 216 34% 17%; /* Will be mostly overridden by glass */
+    --card-foreground: 210 40% 98%;
     
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover: 222 84% 4%;
+    --popover-foreground: 210 40% 98%;
     
-    --primary: 251 93% 66%; /* #7a5af8 */
-    --primary-foreground: 0 0% 100%;
+    --primary: 262 88% 66%; /* Vibrant Purple */
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 215 100% 40%; /* #0052cc */
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 188 94% 47%; /* Bright Cyan */
+    --secondary-foreground: 222 84% 4%;
     
-    --muted: 0 0% 94.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 216 34% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 195 100% 43%; /* #00b8d9 */
-    --accent-foreground: 0 0% 100%;
+    --accent: 326 100% 59%; /* Hot Pink */
+    --accent-foreground: 210 40% 98%;
     
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
     
-    --border: 0 0% 89.8%; /* #e5e5e5 */
-    --input: 0 0% 89.8%;
-    --ring: 251 93% 66%;
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+    --ring: 262 88% 66%;
     
-    --radius: 0.75rem; /* 12px */
+    --radius: 1rem; /* 16px */
   }
  
   .dark {
-    --background: 0 0% 5.9%; /* #0f0f0f */
-    --foreground: 0 0% 98%;
-
-    --card: 240 4% 11%; /* #1c1c1e */
-    --card-foreground: 0 0% 98%;
-
-    --popover: 240 4% 11%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 251 93% 66%; /* #7a5af8 */
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 215 100% 40%; /* #0052cc */
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 240 4% 11%;
-    --muted-foreground: 240 5% 64.9%;
-    
-    --accent: 195 100% 43%; /* #00b8d9 */
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 2% 16%; /* #2a2a2c */
-    --input: 240 2% 16%;
-    --ring: 251 93% 66%;
+    /* Same as root for a unified dark theme */
+    --background: 222 84% 4%;
+    --foreground: 210 40% 98%;
+    --card: 216 34% 17%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 84% 4%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 262 88% 66%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 188 94% 47%;
+    --secondary-foreground: 222 84% 4%;
+    --muted: 216 34% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 326 100% 59%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+    --ring: 262 88% 66%;
   }
 }
  
@@ -75,23 +68,70 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Poppins', sans-serif;
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(ellipse 80% 80% at 50% -20%,
+      rgba(120, 119, 198, 0.3),
+      rgba(255, 255, 255, 0));
   }
 }
 
 @layer components {
   .gradient-text {
-    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)));
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    animation: gradient-flow 5s ease infinite;
+    background-size: 200% 200%;
+  }
+
+  @keyframes gradient-flow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 
   .btn-gradient {
-    background: linear-gradient(90deg, #5c6cff, #00f0ff);
-    color: white;
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)));
+    color: hsl(var(--primary-foreground));
     transition: all 0.3s ease;
+    border: 1px solid transparent;
   }
 
   .btn-gradient:hover {
-    box-shadow: 0 0 20px 0px #00f0ff80;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -10px hsl(var(--secondary) / 0.5);
+  }
+
+  .glass-card {
+    background-color: hsl(var(--card) / 0.5);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.2);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  .glow-border {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glow-border::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    padding: 1px; /* Border thickness */
+    background: linear-gradient(145deg, hsl(var(--primary) / 0.5), hsl(var(--accent) / 0.5));
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask-composite: exclude;
+    pointer-events: none;
   }
 }
