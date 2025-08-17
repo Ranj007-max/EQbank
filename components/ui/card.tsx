@@ -1,3 +1,4 @@
+// Resolving potential merge conflict by re-applying styles.
 import * as React from "react"
 
 import { cn } from "../../lib/utils"
@@ -9,7 +10,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-lg",
+      "rounded-lg border-2 bg-card text-card-foreground shadow-premium",
       className
     )}
     {...props}
