@@ -24,7 +24,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <BookOpenCheck className="h-8 w-8 text-primary" />
             <h1 className="text-2xl font-bold text-foreground">PgQbank</h1>
         </div>
-
+        
         <nav className="flex flex-col gap-2 flex-grow">
             {navItems.map(item => (
                 <NavItem key={item.to} to={item.to} icon={item.icon}>{item.text}</NavItem>
@@ -32,7 +32,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </nav>
 
         <div>
-             <Button
+             <Button 
                 variant="ghost" 
                 onClick={toggleTheme}
                 aria-label="Toggle theme"
@@ -44,7 +44,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </Button>
         </div>
       </aside>
-
+      
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto p-8">
             {children}
