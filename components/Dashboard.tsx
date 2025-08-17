@@ -14,8 +14,10 @@ const Dashboard: React.FC = () => {
             {/* Main Column */}
             <div className="lg:col-span-2 space-y-8">
                 <div>
+
                     <h1 className="text-4xl font-extrabold gradient-text">Welcome to E-Qbank</h1>
                     <p className="text-muted-foreground mt-1 font-bold">Your intelligent MCQ practice partner.</p>
+                    
                 </div>
 
                 <PerformanceCharts timeData={performanceOverTime} subjectData={performanceBySubject} />
