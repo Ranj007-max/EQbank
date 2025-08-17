@@ -36,6 +36,7 @@ interface AnalyticsContextType {
   };
   statsBySubject: Array<{ name: string; total: number; attempted: number; }>;
   statsByPlatform: Array<{ name: string; total: number; attempted: number; }>;
+  statsByChapter: Array<{ name: string; total: number; attempted: number; }>;
   exportData: () => void;
   importData: (data: AppData) => boolean;
   weeklyGoalProgress: { count: number; percentage: number };
@@ -244,6 +245,21 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
         .map(([name, data]) => ({ name, ...data }))
         .sort((a, b) => b.total - a.total);
   }, [batches]);
+
+  const statsByChapter = useMemo(() => {
+    const stats: { [key: string]: { total: number; attempted: number } } = {};
+    batches.forEach(batch => {
+      const chapterKey = `${batch.subject} - ${batch.chapter}`;
+      if (!stats[chapterKey]) {
+        stats[chapterKey] = { total: 0, attempted: 0 };
+      }
+      stats[chapterKey].total += batch.questions.length;
+      stats[chapterKey].attempted += batch.questions.filter(q => q.lastAttemptCorrect !== null).length;
+    });
+    return Object.entries(stats)
+        .map(([name, data]) => ({ name, ...data }))
+        .sort((a, b) => b.total - a.total);
+  }, [batches]);
   
   const weeklyGoalProgress = useMemo(() => {
     if (!goal) return { count: 0, percentage: 0 };
@@ -314,7 +330,9 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
     examHistory, addExamSession, getExamById,
     goal, setGoal,
     allQuestions, dueReviewQuestions, tagStats, performanceBySubject, topicsToWatch, recentActivity, lastSession, overallStats,
-    statsBySubject, statsByPlatform, exportData, importData, weeklyGoalProgress, performanceOverTime
+
+    statsBySubject, statsByPlatform, statsByChapter, exportData, importData, weeklyGoalProgress, performanceOverTime
+
   };
 
   return <AnalyticsContext.Provider value={value}>{children}</AnalyticsContext.Provider>;
