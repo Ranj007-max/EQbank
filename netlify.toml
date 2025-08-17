@@ -1,0 +1,17 @@
+# Netlify build configuration
+[build]
+  # Command to build the site
+  command = "npm run build"
+  # Directory to publish (Vite's default is 'dist')
+  publish = "dist"
+
+# Netlify functions configuration
+[functions]
+  directory = "netlify/functions"
+
+# Redirects to make the API function work
+[[redirects]]
+  # Proxy API calls from your frontend to the Netlify function
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
