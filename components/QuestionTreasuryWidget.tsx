@@ -1,9 +1,11 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Separator } from './ui/separator';
 import { Button } from './ui/button';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '../lib/utils';
+
 
 interface StatItem {
   name: string;
@@ -28,7 +30,9 @@ const StatTable: React.FC<{ title: string; data: StatItem[] }> = ({ title, data 
       </div>
       <div className="max-h-60 overflow-y-auto">
         {data.map((item, index) => (
+
           <div key={index} className="grid grid-cols-3 p-2 border-t hover:bg-muted/50 transition-colors">
+
             <div className="truncate pr-2">{item.name}</div>
             <div className="text-right">{item.attempted}</div>
             <div className="text-right">{item.total}</div>
@@ -44,6 +48,7 @@ export const QuestionTreasuryWidget: React.FC<QuestionTreasuryWidgetProps> = ({
   statsBySubject,
   statsByChapter,
 }) => {
+
   const [isOpen, setIsOpen] = useState(true);
 
   return (
@@ -69,6 +74,7 @@ export const QuestionTreasuryWidget: React.FC<QuestionTreasuryWidgetProps> = ({
           <StatTable title="By Chapter" data={statsByChapter} />
         </CardContent>
       </div>
+
     </Card>
   );
 };

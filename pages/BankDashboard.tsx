@@ -7,17 +7,24 @@ import StudyPanel from '../components/StudyPanel';
 import { GoalTrackerWidget } from '../components/GoalTrackerWidget';
 import { TopicsToWatchWidget } from '../components/TopicsToWatchWidget';
 import { TagStatsWidget } from '../components/TagStatsWidget';
+
+
 import { QuestionTreasuryWidget } from '../components/QuestionTreasuryWidget';
+
+
 
 import { Button } from '../components/ui/button';
 
 const BankDashboard: React.FC = () => {
   const { 
     topicsToWatch,
+
+
     tagStats,
     statsByPlatform,
     statsBySubject,
     statsByChapter
+
   } = useAnalytics();
   
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -48,16 +55,26 @@ const BankDashboard: React.FC = () => {
           </div>
         </div>
       
-        <div>
-          <QuestionTreasuryWidget
-            statsByPlatform={statsByPlatform}
-            statsBySubject={statsBySubject}
-            statsByChapter={statsByChapter}
-          />
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main column for charts */}
+          <div className="lg:col-span-2">
+             <QuestionTreasuryWidget
+                statsByPlatform={statsByPlatform}
+                statsBySubject={statsBySubject}
+                statsByChapter={statsByChapter}
+              />
+          </div>
+
+          {/* Right sidebar for smaller widgets */}
+          <div className="space-y-6">
+            <GoalTrackerWidget />
+            <TagStatsWidget stats={tagStats} />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <TagStatsWidget stats={tagStats} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
           <TopicsToWatchWidget topics={topicsToWatch} />
           <GoalTrackerWidget />
         </div>

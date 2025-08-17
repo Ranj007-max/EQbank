@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAnalytics } from '../context/AnalyticsContext';
 import { MBBS_SUBJECTS, PLATFORMS } from '../data/constants';
 import { Batch, ParsedMCQ, MCQ } from '../types';
-import { ArrowLeft, LoaderCircle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, LoaderCircle, CheckCircle, Wand, Edit } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -16,7 +16,18 @@ const AddQuestions: React.FC = () => {
   const navigate = useNavigate();
   const { addBatch } = useAnalytics();
 
+  const [addMode, setAddMode] = useState<'ai' | 'manual'>('ai');
+
+  // AI Mode State
   const [rawText, setRawText] = useState('');
+
+  // Manual Mode State
+  const [manualMCQs, setManualMCQs] = useState<ParsedMCQ[]>([]);
+  const [currentMCQ, setCurrentMCQ] = useState<ParsedMCQ>({ question: '', options: ['', '', '', ''], answer: '', explanation: '' });
+  const [manualError, setManualError] = useState<string | null>(null);
+
+
+  // Common State
   const [subject, setSubject] = useState(MBBS_SUBJECTS[0]);
   const [chapter, setChapter] = useState('');
   const [platform, setPlatform] = useState(PLATFORMS[0]);
@@ -65,7 +76,8 @@ const AddQuestions: React.FC = () => {
   };
 
   const handleSaveBatch = () => {
-    if (!parsedMCQs) return;
+    const questionsToSave = addMode === 'ai' ? parsedMCQs : manualMCQs;
+    if (!questionsToSave || questionsToSave.length === 0) return;
 
     const newBatch: Batch = {
       id: uuidv4(),
@@ -74,7 +86,7 @@ const AddQuestions: React.FC = () => {
       chapter,
       platform,
       createdAt: new Date().toISOString(),
-      questions: parsedMCQs.map((mcq): MCQ => ({
+      questions: questionsToSave.map((mcq): MCQ => ({
         id: uuidv4(),
         ...mcq,
         tags: { bookmarked: false, hard: false, revise: false },
@@ -87,17 +99,29 @@ const AddQuestions: React.FC = () => {
     addBatch(newBatch);
     navigate('/bank');
   };
-  
+
+  const handleAddManualMCQ = () => {
+    setManualError(null);
+    if (!currentMCQ.question.trim() || !currentMCQ.explanation.trim() || currentMCQ.options.some(o => !o.trim()) || !currentMCQ.answer.trim()) {
+      setManualError('Please fill all fields for the question.');
+      return;
+    }
+    setManualMCQs(prev => [...prev, currentMCQ]);
+    setCurrentMCQ({ question: '', options: ['', '', '', ''], answer: '', explanation: '' });
+  };
+
   const renderPreview = () => {
-    if (!parsedMCQs) return null;
+    const questionsToPreview = addMode === 'ai' ? parsedMCQs : manualMCQs;
+    if (!questionsToPreview || questionsToPreview.length === 0) return null;
+
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Import Preview ({parsedMCQs.length} questions)</CardTitle>
+          <CardTitle>Import Preview ({questionsToPreview.length} questions)</CardTitle>
         </CardHeader>
         <CardContent>
             <div className="space-y-4 max-h-[50vh] overflow-y-auto p-4 bg-muted/50 rounded-lg border">
-                {parsedMCQs.map((mcq, index) => (
+                {questionsToPreview.map((mcq, index) => (
                     <Card key={index} className="p-4 bg-background">
                     <p className="font-semibold text-foreground">{index + 1}. {mcq.question}</p>
                     <ul className="list-disc list-inside ml-4 mt-2 text-muted-foreground">
@@ -111,7 +135,7 @@ const AddQuestions: React.FC = () => {
             </div>
         </CardContent>
         <CardFooter className="flex justify-end gap-4">
-             <Button variant="outline" onClick={() => setParsedMCQs(null)}>Back to Edit</Button>
+             <Button variant="outline" onClick={() => addMode === 'ai' ? setParsedMCQs(null) : setManualMCQs([])}>Back to Edit</Button>
             <Button onClick={handleSaveBatch} className="bg-green-600 hover:bg-green-700">
                 <CheckCircle size={20} className="mr-2"/>
                 Confirm and Save Batch
@@ -121,34 +145,9 @@ const AddQuestions: React.FC = () => {
     );
   };
   
-  const renderForm = () => (
+  const renderAiForm = () => (
     <Card>
       <CardContent className="space-y-6 pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-                <Label htmlFor="subject">Subject</Label>
-                <Select value={subject} onValueChange={setSubject}>
-                    <SelectTrigger id="subject"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                        {MBBS_SUBJECTS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="chapter">Chapter Name</Label>
-                <Input id="chapter" value={chapter} onChange={e => setChapter(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="platform">Platform</Label>
-                 <Select value={platform} onValueChange={setPlatform}>
-                    <SelectTrigger id="platform"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                        {PLATFORMS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-            </div>
-        </div>
-
         <div className="space-y-2">
             <Label htmlFor="raw-text">MCQ Content</Label>
             <Textarea
@@ -169,11 +168,90 @@ const AddQuestions: React.FC = () => {
           disabled={isLoading}
           className="w-48"
         >
-          {isLoading ? <LoaderCircle className="animate-spin" size={20} /> : 'Process and Import'}
+          {isLoading ? <LoaderCircle className="animate-spin" size={20} /> : 'Process with AI'}
         </Button>
       </CardFooter>
     </Card>
   );
+
+  const renderManualForm = () => (
+    <Card>
+      <CardContent className="space-y-6 pt-6">
+        <div className="space-y-2">
+          <Label htmlFor="question">Question</Label>
+          <Textarea id="question" value={currentMCQ.question} onChange={e => setCurrentMCQ(p => ({ ...p, question: e.target.value }))} />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+                <Label>Option A</Label>
+                <Input value={currentMCQ.options[0]} onChange={e => { const o = [...currentMCQ.options]; o[0] = e.target.value; setCurrentMCQ(p => ({...p, options: o})) }} />
+            </div>
+            <div className="space-y-2">
+                <Label>Option B</Label>
+                <Input value={currentMCQ.options[1]} onChange={e => { const o = [...currentMCQ.options]; o[1] = e.target.value; setCurrentMCQ(p => ({...p, options: o})) }} />
+            </div>
+            <div className="space-y-2">
+                <Label>Option C</Label>
+                <Input value={currentMCQ.options[2]} onChange={e => { const o = [...currentMCQ.options]; o[2] = e.target.value; setCurrentMCQ(p => ({...p, options: o})) }} />
+            </div>
+            <div className="space-y-2">
+                <Label>Option D</Label>
+                <Input value={currentMCQ.options[3]} onChange={e => { const o = [...currentMCQ.options]; o[3] = e.target.value; setCurrentMCQ(p => ({...p, options: o})) }} />
+            </div>
+        </div>
+        <div className="space-y-2">
+            <Label>Correct Answer</Label>
+            <Select value={currentMCQ.answer} onValueChange={value => setCurrentMCQ(p => ({...p, answer: value}))}>
+                <SelectTrigger><SelectValue placeholder="Select the correct answer" /></SelectTrigger>
+                <SelectContent>
+                    {currentMCQ.options.filter(o => o.trim() !== '').map((opt, i) => (
+                        <SelectItem key={i} value={opt}>{opt}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="explanation">Explanation</Label>
+          <Textarea id="explanation" value={currentMCQ.explanation} onChange={e => setCurrentMCQ(p => ({ ...p, explanation: e.target.value }))} />
+        </div>
+        {manualError && <p className="text-sm text-destructive">{manualError}</p>}
+      </CardContent>
+      <CardFooter className="flex justify-end">
+        <Button onClick={handleAddManualMCQ}>Add Question to Batch</Button>
+      </CardFooter>
+    </Card>
+  );
+
+  const renderTopForm = () => (
+    <Card>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+             <div className="space-y-2">
+                <Label htmlFor="subject">Subject</Label>
+                <Select value={subject} onValueChange={setSubject}>
+                    <SelectTrigger id="subject"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                        {MBBS_SUBJECTS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="chapter">Chapter Name</Label>
+                <Input id="chapter" value={chapter} onChange={e => setChapter(e.target.value)} placeholder="e.g., Embryology" />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="platform">Platform</Label>
+                 <Select value={platform} onValueChange={setPlatform}>
+                    <SelectTrigger id="platform"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                        {PLATFORMS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            </div>
+        </CardContent>
+    </Card>
+  )
+
+  const showPreview = (addMode === 'ai' && parsedMCQs && parsedMCQs.length > 0) || (addMode === 'manual' && manualMCQs.length > 0);
 
   return (
     <div className="animate-fade-in max-w-4xl mx-auto space-y-6">
@@ -183,10 +261,26 @@ const AddQuestions: React.FC = () => {
                 Back to Bank
             </Button>
             <h1 className="text-5xl font-bold gradient-text">Add New Questions</h1>
-            <p className="text-muted-foreground mt-2">Paste your unstructured MCQ text below and let the AI parse it for you.</p>
+            <p className="text-muted-foreground mt-2">Add questions by pasting text for AI processing or by entering them manually.</p>
+        </div>
+
+        <div className="flex gap-2">
+            <Button onClick={() => setAddMode('ai')} variant={addMode === 'ai' ? 'default' : 'outline'} className="flex-1 sm:flex-initial sm:flex-grow-0">
+                <Wand size={16} className="mr-2" />
+                AI Paste
+            </Button>
+            <Button onClick={() => setAddMode('manual')} variant={addMode === 'manual' ? 'default' : 'outline'} className="flex-1 sm:flex-initial sm:flex-grow-0">
+                <Edit size={16} className="mr-2" />
+                Manual Entry
+            </Button>
         </div>
       
-      {parsedMCQs ? renderPreview() : renderForm()}
+        {showPreview ? renderPreview() : (
+            <div className="space-y-6">
+                {renderTopForm()}
+                {addMode === 'ai' ? renderAiForm() : renderManualForm()}
+            </div>
+        )}
     </div>
   );
 };
