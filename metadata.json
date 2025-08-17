@@ -1,0 +1,5 @@
+{
+  "name": "PgQbank",
+  "description": "A personalized question bank application for medical students, built with React, Supabase, and Tailwind CSS. Users can take quizzes, review performance, and browse topics.",
+  "requestFramePermissions": []
+}

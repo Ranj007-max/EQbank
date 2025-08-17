@@ -1,11 +1,44 @@
-<div align="center">
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+# PgQbank - Intelligent Medical MCQ Practice
 
-  <h1>Built with AI Studio</h2>
+PgQbank is a premier, online-only Progressive Web App (PWA) designed for medical students. It serves as an intelligent MCQ practice tool for deep learning and comprehensive performance tracking. The application is meticulously optimized for a responsive, touch-first experience on Safari for iPad Air.
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+## Tech Stack
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+- **Frontend:** React 18 (with Vite) & TypeScript
+- **Styling:** Tailwind CSS
+- **State Management:** React Hooks
+- **Backend:** Serverless (Designed for Netlify Functions)
+- **Deployment:** Netlify
 
-</div>
+## Getting Started
+
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+
+### Prerequisites
+
+- Node.js (v18 or later)
+- npm or yarn
+
+### Installation
+
+1.  **Clone the repository:**
+    ```sh
+    git clone <repository-url>
+    cd pgqbank
+    ```
+
+2.  **Install dependencies:**
+    ```sh
+    npm install
+    ```
+
+### Running the Development Server
+
+Once you have installed the dependencies, you can start the development server:
+
+```sh
+npm run dev
+```
+
+The application will be available at `http://localhost:5173`.
