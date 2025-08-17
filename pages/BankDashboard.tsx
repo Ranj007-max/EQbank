@@ -221,7 +221,7 @@ const BankDashboard: React.FC = () => {
     <div className="animate-fade-in space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Question Bank</h1>
+          <h1 className="text-5xl font-bold gradient-text">Question Bank</h1>
           <p className="text-muted-foreground mt-1">Manage batches, analyze your progress, and launch study sessions.</p>
         </div>
         <div className="flex items-center gap-4">

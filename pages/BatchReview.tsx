@@ -45,7 +45,7 @@ const BatchReview: React.FC = () => {
             <ArrowLeft size={16} />
             Back to Bank
         </Button>
-        <h1 className="text-3xl font-bold text-foreground">{batch.name}</h1>
+        <h1 className="text-5xl font-bold gradient-text">{batch.name}</h1>
         <p className="text-muted-foreground mt-1">{batch.questions.length} questions from {batch.platform}</p>
       </div>
       

@@ -82,7 +82,7 @@ const ExamSetup: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
         <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-foreground">Create New Exam</h1>
+            <h1 className="text-5xl font-bold gradient-text">Create New Exam</h1>
             <p className="text-muted-foreground mt-2">Customize your exam by selecting from the options below.</p>
         </div>
 

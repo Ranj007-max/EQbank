@@ -48,7 +48,7 @@ const ExamResults: React.FC = () => {
     <div className="animate-fade-in max-w-5xl mx-auto">
       <Card className="mb-8">
         <CardHeader className="text-center">
-            <CardTitle className="text-4xl font-bold">Exam Results</CardTitle>
+            <CardTitle className="text-5xl font-bold gradient-text">Exam Results</CardTitle>
             <CardDescription>Review your performance for the session completed on {new Date(examSession.createdAt).toLocaleDateString()}.</CardDescription>
         </CardHeader>
         <CardContent>
