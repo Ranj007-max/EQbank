@@ -264,8 +264,8 @@ const AddQuestions: React.FC = () => {
         </div>
 
         <div className="flex gap-2 p-1 rounded-full bg-black/20 border border-white/10 w-full max-w-sm mx-auto">
-            <Button
-              onClick={() => setAddMode('ai')}
+            <Button 
+              onClick={() => setAddMode('ai')} 
               className={cn(
                 "w-full rounded-full transition-all duration-300",
                 addMode === 'ai' ? 'btn-gradient' : 'bg-transparent text-muted-foreground hover:bg-white/10'
@@ -274,8 +274,8 @@ const AddQuestions: React.FC = () => {
                 <Wand size={16} className="mr-2" />
                 AI Paste
             </Button>
-            <Button
-              onClick={() => setAddMode('manual')}
+            <Button 
+              onClick={() => setAddMode('manual')} 
               className={cn(
                 "w-full rounded-full transition-all duration-300",
                 addMode === 'manual' ? 'btn-gradient' : 'bg-transparent text-muted-foreground hover:bg-white/10'
@@ -296,4 +296,4 @@ const AddQuestions: React.FC = () => {
   );
 };
 
-export default AddQuestions;
+export default AddQuestions 

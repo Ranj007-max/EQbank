@@ -71,7 +71,7 @@
   }
 
   .dark body {
-    background-image:
+    background-image: 
       radial-gradient(ellipse 80% 80% at 50% -20%,
       rgba(120, 119, 198, 0.3),
       rgba(255, 255, 255, 0));
@@ -139,8 +139,8 @@
     border-radius: inherit;
     padding: 1px; /* Border thickness */
     background: linear-gradient(145deg, hsl(var(--primary) / 0.5), hsl(var(--accent) / 0.5));
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
       linear-gradient(#fff 0 0);
     -webkit-mask-composite: destination-out;
     mask-composite: exclude;
