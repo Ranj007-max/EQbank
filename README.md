@@ -1,4 +1,3 @@
-
 # PgQbank - Intelligent Medical MCQ Practice
 
 PgQbank is a premier, online-only Progressive Web App (PWA) designed for medical students. It serves as an intelligent MCQ practice tool for deep learning and comprehensive performance tracking. The application is meticulously optimized for a responsive, touch-first experience on Safari for iPad Air.
@@ -42,3 +41,7 @@ npm run dev
 ```
 
 The application will be available at `http://localhost:5173`.
+
+## Deployment
+
+This project is configured for one-click deployment on Netlify. The `netlify.toml` file at the root of the project contains the necessary build commands, function directory, and redirect rules. To deploy your own version, simply connect your forked repository to a new Netlify site.
