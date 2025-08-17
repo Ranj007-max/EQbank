@@ -13,20 +13,20 @@ import { LastSessionWidget } from '../components/LastSessionWidget';
 import { Button } from '../components/ui/button';
 
 const BankDashboard: React.FC = () => {
-  const {
-    recentActivity,
+  const { 
+    recentActivity, 
     topicsToWatch,
     lastSession,
     performanceOverTime,
     performanceBySubject
   } = useAnalytics();
-
+  
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   return (
     <>
       <StudyPanel isOpen={isPanelOpen} onOpenChange={setIsPanelOpen} />
-
+      
       <div className="animate-fade-in space-y-8">
         <div className="flex justify-between items-center">
           <div>
@@ -70,5 +70,3 @@ const BankDashboard: React.FC = () => {
     </>
   );
 };
-
-export default BankDashboard;
