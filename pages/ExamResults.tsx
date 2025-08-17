@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
 import { MCQ } from '../types';
 import { CheckCircle, XCircle, Clock, Hash, Percent, Bookmark, Flame, RefreshCw } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 
 const ExamResults: React.FC = () => {

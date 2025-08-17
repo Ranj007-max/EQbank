@@ -1,11 +1,10 @@
-import React from 'react';
 import { BookCopy, BarChart3, Target, CheckCircle, FilePlus2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
 import { Activity } from '../types';
 import { GoalTrackerWidget } from './GoalTrackerWidget';
 import { PerformanceCharts } from './PerformanceCharts';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Button } from './ui/button';
 
 const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
@@ -104,7 +103,7 @@ const Dashboard: React.FC = () => {
                         <CardContent>
                             {recentActivity.length > 0 ? (
                                 <div className="divide-y divide-border">
-                                    {recentActivity.map((act, index) => <ActivityItem key={act.id + act.createdAt} activity={act} />)}
+                                    {recentActivity.map((act) => <ActivityItem key={act.id + act.createdAt} activity={act} />)}
                                 </div>
                             ) : (
                                 <div className="text-center text-muted-foreground py-8">
