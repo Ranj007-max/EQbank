@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
-import { StudyQuestion } from '../types';
 import { Bookmark, Flame, RefreshCw, CheckCircle, XCircle, BrainCircuit } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '../components/ui/card';

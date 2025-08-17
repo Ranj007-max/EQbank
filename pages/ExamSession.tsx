@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { useAnalytics } from '../context/AnalyticsContext';
-import { ExamQuestion, ExamSession } from '../types';
+import type { ExamQuestion, ExamSession } from '../types';
 import { ChevronLeft, ChevronRight, Flag, Power, LoaderCircle } from 'lucide-react';
 import Timer from '../components/Timer';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader } from '../components/ui/card';
+import { Card, CardHeader } from '../components/ui/card';
 import { cn } from '../lib/utils';
 
 interface SessionState {

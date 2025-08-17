@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
 import { Zap } from 'lucide-react';
 import { ExamQuestion } from '../types';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent, CardFooter } from '../components/ui/card';
 import { Checkbox } from '../components/ui/checkbox';
 import { Label } from '../components/ui/label';
 
