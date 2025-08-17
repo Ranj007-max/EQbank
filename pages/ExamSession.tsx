@@ -6,7 +6,7 @@ import type { ExamQuestion, ExamSession } from '../types';
 import { ChevronLeft, ChevronRight, Flag, Power, LoaderCircle } from 'lucide-react';
 import Timer from '../components/Timer';
 import { Button } from '../components/ui/button';
-import { Card, CardHeader } from '../components/ui/card';
+import { Card, CardHeader, CardContent, CardFooter } from '../components/ui/card';
 import { cn } from '../lib/utils';
 
 interface SessionState {
@@ -47,8 +47,7 @@ const ExamSession: React.FC = () => {
         if (savedIndex) setCurrentIndex(Number(savedIndex));
       } catch (e) {
         console.error("Failed to parse saved exam session:", e);
-        sessionStorage.removeItem('examSession');
-        sessionStorage.removeItem('examSessionIndex');
+        sessionStorage.clear();
         navigate('/exams');
       }
     } else {
@@ -70,7 +69,7 @@ const ExamSession: React.FC = () => {
 
   const handleEndExam = () => {
     if (!sessionState) return;
-    if (!window.confirm('Are you sure you want to end the exam?')) return;
+    if (!window.confirm('Are you sure you want to end the exam? This action cannot be undone.')) return;
     
     const { questions, config, answers, startTime } = sessionState;
     const timeTaken = Math.floor((Date.now() - startTime) / 1000);
@@ -78,35 +77,25 @@ const ExamSession: React.FC = () => {
     
     const answeredQuestions = questions
       .filter(q => answers[q.id] !== undefined)
-      .map(q => ({
-        batchId: q.batchId,
-        questionId: q.id,
-        isCorrect: answers[q.id] === q.answer,
-      }));
+      .map(q => ({ batchId: q.batchId, questionId: q.id, isCorrect: answers[q.id] === q.answer }));
     
-    if (answeredQuestions.length > 0) {
-      recordMultipleAnswers(answeredQuestions);
-    }
+    if (answeredQuestions.length > 0) recordMultipleAnswers(answeredQuestions);
     
     const session: ExamSession = {
       id: uuidv4(),
       createdAt: new Date().toISOString(),
       timeTaken,
       config,
-      questions: questions.map(q => ({
-        questionData: q,
-        userAnswer: answers[q.id] || null,
-        isCorrect: answers[q.id] === q.answer,
-      })),
+      questions: questions.map(q => ({ questionData: q, userAnswer: answers[q.id] || null, isCorrect: answers[q.id] === q.answer })),
       score: Math.round((correctAnswers.length / questions.length) * 100),
       accuracy: `${correctAnswers.length}/${questions.length}`,
+      correctAnswers: correctAnswers.length,
+      totalQuestions: questions.length,
     };
 
     addExamSession(session);
-    
     sessionStorage.removeItem('examSession');
     sessionStorage.removeItem('examSessionIndex');
-
     navigate(`/exam/results/${session.id}`);
   };
 
@@ -145,31 +134,33 @@ const ExamSession: React.FC = () => {
     );
   }
 
+  const isLastQuestion = currentIndex === sessionState.questions.length - 1;
+
   return (
-    <div className="flex gap-6 h-[calc(100vh-120px)]">
+    <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-120px)]">
       <Card className="flex-grow flex flex-col">
-        <CardHeader className="flex-row justify-between items-center border-b">
+        <CardHeader className="flex-row justify-between items-center border-b p-4">
           <div>
             <h2 className="text-xl font-bold text-foreground">Question {currentIndex + 1}</h2>
             <p className="text-sm text-muted-foreground">{currentQuestion.subject} | {currentQuestion.platform}</p>
           </div>
-          <Timer initialSeconds={sessionState.questions.length * 60 - Math.floor((Date.now() - sessionState.startTime)/1000)} onTimeUp={handleEndExam} isPaused={false} />
+          <Timer initialSeconds={(sessionState.config.durationMinutes * 60) - Math.floor((Date.now() - sessionState.startTime)/1000)} onTimeUp={handleEndExam} isPaused={false} />
         </CardHeader>
         
-        <div className="flex-grow overflow-y-auto p-6">
-            <p className="text-lg text-foreground mb-6">{currentQuestion.question}</p>
+        <CardContent className="flex-grow overflow-y-auto p-6">
+            <p className="text-lg font-semibold text-foreground mb-6 leading-relaxed">{currentQuestion.question}</p>
             <div className="space-y-3">
             {currentQuestion.options.map((option, i) => (
-                <label key={i} className={`p-4 border rounded-lg transition-all duration-200 flex items-center gap-4 cursor-pointer ${sessionState.answers[currentQuestion.id] === option ? 'bg-primary/10 border-primary shadow-sm' : 'bg-muted/50 border-border hover:border-primary/50'}`}>
-                    <input type="radio" name={`q_${currentQuestion.id}`} value={option} checked={sessionState.answers[currentQuestion.id] === option} onChange={() => handleSelectAnswer(option)} className="h-5 w-5 text-primary focus:ring-primary border-muted-foreground bg-transparent" />
-                    <span className="font-medium">{option}</span>
+                <label key={i} className={cn('p-3 border rounded-lg transition-all flex items-center gap-4 cursor-pointer', sessionState.answers[currentQuestion.id] === option ? 'bg-primary/10 border-primary ring-2 ring-primary' : 'bg-muted/30 border-border hover:border-primary/50')}>
+                    <input type="radio" name={`q_${currentQuestion.id}`} value={option} checked={sessionState.answers[currentQuestion.id] === option} onChange={() => handleSelectAnswer(option)} className="h-5 w-5 accent-primary" />
+                    <span className="font-medium text-base">{option}</span>
                 </label>
             ))}
             </div>
-        </div>
+        </CardContent>
         
-        <div className="flex justify-between items-center border-t p-4">
-          <Button onClick={toggleMarkForReview} variant={sessionState.markedForReview.includes(currentQuestion.id) ? 'default' : 'outline'} className={cn(sessionState.markedForReview.includes(currentQuestion.id) && "bg-amber-500 hover:bg-amber-600")}>
+        <CardFooter className="flex justify-between items-center border-t p-3 bg-muted/30">
+          <Button onClick={toggleMarkForReview} variant={sessionState.markedForReview.includes(currentQuestion.id) ? 'warning' : 'outline'}>
             <Flag size={18} className="mr-2"/>
             {sessionState.markedForReview.includes(currentQuestion.id) ? 'Marked' : 'Mark for Review'}
           </Button>
@@ -177,31 +168,28 @@ const ExamSession: React.FC = () => {
             <Button onClick={() => changeQuestion(currentIndex - 1)} disabled={currentIndex === 0} variant="outline">
               <ChevronLeft size={20} className="mr-2" /> Previous
             </Button>
-            <Button onClick={() => changeQuestion(currentIndex + 1)} disabled={currentIndex === sessionState.questions.length - 1} variant="outline">
-              Next <ChevronRight size={20} className="ml-2" />
+            <Button onClick={() => isLastQuestion ? handleEndExam() : changeQuestion(currentIndex + 1)} variant={isLastQuestion ? 'gradient' : 'default'}>
+              {isLastQuestion ? 'Finish & Submit' : 'Save & Next'} <ChevronRight size={20} className="ml-2" />
             </Button>
           </div>
-        </div>
+        </CardFooter>
       </Card>
 
-      <Card className="w-64 flex-shrink-0 p-4 flex flex-col">
+      <Card className="w-full lg:w-72 flex-shrink-0 p-4 flex flex-col">
         <h3 className="font-bold text-foreground mb-3 text-center">Question Palette</h3>
-        <div className="grid grid-cols-5 gap-2 flex-grow overflow-y-auto content-start">
+        <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-8 lg:grid-cols-5 gap-2 flex-grow overflow-y-auto content-start">
           {sessionState.questions.map((q, index) => {
             const isMarked = sessionState.markedForReview.includes(q.id);
             const isAnswered = sessionState.answers[q.id] !== undefined;
             const isCurrent = index === currentIndex;
-            const isVisited = sessionState.visited.includes(q.id);
             
-            let variant: "default" | "secondary" | "outline" = 'outline';
-            let extraClasses = "";
-            if (isVisited && !isAnswered) variant = 'secondary';
-            if (isAnswered) { variant = 'default'; extraClasses="bg-green-600 hover:bg-green-700 text-primary-foreground"}
-            if (isMarked) { variant = 'default'; extraClasses = "bg-amber-500 hover:bg-amber-600 text-primary-foreground"; }
-            if (isCurrent) extraClasses += ' ring-2 ring-ring ring-offset-2 ring-offset-background';
+            let variant: "success" | "warning" | "default" | "outline" = 'outline';
+            if (isAnswered) variant = 'success';
+            if (isMarked) variant = 'warning';
+            if (!isAnswered && !isMarked && sessionState.visited.includes(q.id)) variant = 'default';
 
             return (
-              <Button key={q.id} onClick={() => changeQuestion(index)} variant={variant} size="icon" className={cn("h-10 w-10", extraClasses)}>
+              <Button key={q.id} onClick={() => changeQuestion(index)} variant={variant} size="icon" className={cn("h-10 w-10", isCurrent && 'ring-2 ring-ring ring-offset-2 ring-offset-background')}>
                 {index + 1}
               </Button>
             );

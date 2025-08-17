@@ -31,7 +31,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
         cy={size / 2}
       />
       <circle
-        className="text-primary"
+        className="text-primary transition-all duration-500 ease-in-out"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeDasharray={circumference}

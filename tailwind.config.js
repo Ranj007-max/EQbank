@@ -19,7 +19,7 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Poppins', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -60,6 +60,9 @@ module.exports = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        premium: '0 4px 20px rgba(0,0,0,0.1)',
       },
       keyframes: {
         "accordion-down": {

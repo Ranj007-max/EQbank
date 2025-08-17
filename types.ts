@@ -59,10 +59,11 @@ export interface ExamQuestion extends MCQ {
 
 export interface ExamSession {
   id: string;
-  createdAt: string;
+  createdAt:string;
   timeTaken: number; // in seconds
   config: {
     questionCount: number;
+    durationMinutes: number;
     subjects: string[];
     platforms: string[];
     statuses: string[];
@@ -74,6 +75,8 @@ export interface ExamSession {
   }>;
   score: number;
   accuracy: string;
+  correctAnswers: number;
+  totalQuestions: number;
 }
 
 export type Activity =
