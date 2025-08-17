@@ -23,6 +23,7 @@ interface AnalyticsContextType {
   // Derived Analytics
   allQuestions: MCQ[];
   dueReviewQuestions: StudyQuestion[];
+  tagStats: { bookmarked: number; hard: number; revise: number; mistaked: number; };
   performanceBySubject: Array<{ subject: string; correct: number; total: number; accuracy: number; }>;
   topicsToWatch: Array<{ subject: string; accuracy: number; }>;
   recentActivity: Activity[];
@@ -35,6 +36,7 @@ interface AnalyticsContextType {
   };
   statsBySubject: Array<{ name: string; total: number; attempted: number; }>;
   statsByPlatform: Array<{ name: string; total: number; attempted: number; }>;
+  statsByChapter: Array<{ name: string; total: number; attempted: number; }>;
   exportData: () => void;
   importData: (data: AppData) => boolean;
   weeklyGoalProgress: { count: number; percentage: number };
@@ -121,6 +123,17 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
   // --- Computational Logic & Derived State (The "Engine") ---
 
   const allQuestions = useMemo(() => batches.flatMap(b => b.questions), [batches]);
+
+  const tagStats = useMemo(() => {
+    const stats = { bookmarked: 0, hard: 0, revise: 0, mistaked: 0 };
+    allQuestions.forEach(q => {
+      if (q.tags.bookmarked) stats.bookmarked++;
+      if (q.tags.hard) stats.hard++;
+      if (q.tags.revise) stats.revise++;
+      if (q.lastAttemptCorrect === false) stats.mistaked++;
+    });
+    return stats;
+  }, [allQuestions]);
 
   const dueReviewQuestions = useMemo(() => {
     const today = new Date();
@@ -232,6 +245,21 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
         .map(([name, data]) => ({ name, ...data }))
         .sort((a, b) => b.total - a.total);
   }, [batches]);
+
+  const statsByChapter = useMemo(() => {
+    const stats: { [key: string]: { total: number; attempted: number } } = {};
+    batches.forEach(batch => {
+      const chapterKey = `${batch.subject} - ${batch.chapter}`;
+      if (!stats[chapterKey]) {
+        stats[chapterKey] = { total: 0, attempted: 0 };
+      }
+      stats[chapterKey].total += batch.questions.length;
+      stats[chapterKey].attempted += batch.questions.filter(q => q.lastAttemptCorrect !== null).length;
+    });
+    return Object.entries(stats)
+        .map(([name, data]) => ({ name, ...data }))
+        .sort((a, b) => b.total - a.total);
+  }, [batches]);
   
   const weeklyGoalProgress = useMemo(() => {
     if (!goal) return { count: 0, percentage: 0 };
@@ -301,8 +329,8 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
     studyHistory, addStudySession,
     examHistory, addExamSession, getExamById,
     goal, setGoal,
-    allQuestions, dueReviewQuestions, performanceBySubject, topicsToWatch, recentActivity, lastSession, overallStats,
-    statsBySubject, statsByPlatform, exportData, importData, weeklyGoalProgress, performanceOverTime
+    allQuestions, dueReviewQuestions, tagStats, performanceBySubject, topicsToWatch, recentActivity, lastSession, overallStats,
+    statsBySubject, statsByPlatform, statsByChapter, exportData, importData, weeklyGoalProgress, performanceOverTime
   };
 
   return <AnalyticsContext.Provider value={value}>{children}</AnalyticsContext.Provider>;

@@ -7,6 +7,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter } from '../components/ui/card';
 import { Checkbox } from '../components/ui/checkbox';
 import { Label } from '../components/ui/label';
+import { ExamHistoryTable } from '../components/ExamHistoryTable';
 
 const QUESTION_STATUSES = {
   unattempted: 'Unattempted',
@@ -144,6 +145,10 @@ const ExamSetup: React.FC = () => {
                 </Button>
             </CardFooter>
         </Card>
+
+        <div className="mt-12">
+            <ExamHistoryTable />
+        </div>
     </div>
   );
 };
