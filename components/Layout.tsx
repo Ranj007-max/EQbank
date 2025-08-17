@@ -22,7 +22,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <aside className="w-56 flex-shrink-0 border-r bg-card flex flex-col">
         <div className="flex items-center gap-2.5 px-4 h-20 border-b">
             <BookOpenCheck className="h-7 w-7 text-primary" />
-            <h1 className="text-xl font-bold text-foreground tracking-tighter">PremiumQBank</h1>
+            <h1 className="text-xl font-bold text-foreground tracking-tighter">E-Qbank</h1>
         </div>
         
         <nav className="flex flex-col gap-1 p-4 flex-grow">
