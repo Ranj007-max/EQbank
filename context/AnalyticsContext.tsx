@@ -330,8 +330,10 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
     examHistory, addExamSession, getExamById,
     goal, setGoal,
     allQuestions, dueReviewQuestions, tagStats, performanceBySubject, topicsToWatch, recentActivity, lastSession, overallStats,
+    
 
     statsBySubject, statsByPlatform, statsByChapter, exportData, importData, weeklyGoalProgress, performanceOverTime
+
 
   };
 

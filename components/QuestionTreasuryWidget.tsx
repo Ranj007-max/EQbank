@@ -1,5 +1,11 @@
+
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Separator } from './ui/separator';
+import { Button } from './ui/button';
+import { ChevronDown } from 'lucide-react';
+import { cn } from '../lib/utils';
+
 
 interface StatItem {
   name: string;
@@ -24,7 +30,9 @@ const StatTable: React.FC<{ title: string; data: StatItem[] }> = ({ title, data 
       </div>
       <div className="max-h-60 overflow-y-auto">
         {data.map((item, index) => (
-          <div key={index} className="grid grid-cols-3 p-2 border-t">
+
+          <div key={index} className="grid grid-cols-3 p-2 border-t hover:bg-muted/50 transition-colors">
+
             <div className="truncate pr-2">{item.name}</div>
             <div className="text-right">{item.attempted}</div>
             <div className="text-right">{item.total}</div>
@@ -40,18 +48,33 @@ export const QuestionTreasuryWidget: React.FC<QuestionTreasuryWidgetProps> = ({
   statsBySubject,
   statsByChapter,
 }) => {
+
+  const [isOpen, setIsOpen] = useState(true);
+
   return (
     <Card>
-      <CardHeader>
+      <CardHeader
+        className="flex flex-row items-center justify-between cursor-pointer"
+        onClick={() => setIsOpen(!isOpen)}
+      >
         <CardTitle>Question Treasury</CardTitle>
+        <Button variant="ghost" size="icon">
+          <ChevronDown className={cn("transition-transform duration-300", !isOpen && "-rotate-90")} />
+        </Button>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <StatTable title="By Platform" data={statsByPlatform} />
-        <Separator />
-        <StatTable title="By Subject" data={statsBySubject} />
-        <Separator />
-        <StatTable title="By Chapter" data={statsByChapter} />
-      </CardContent>
+      <div className={cn(
+          "transition-all duration-500 ease-in-out overflow-hidden",
+          isOpen ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-50"
+      )}>
+        <CardContent className="space-y-6 pt-4">
+          <StatTable title="By Platform" data={statsByPlatform} />
+          <Separator />
+          <StatTable title="By Subject" data={statsBySubject} />
+          <Separator />
+          <StatTable title="By Chapter" data={statsByChapter} />
+        </CardContent>
+      </div>
+
     </Card>
   );
 };

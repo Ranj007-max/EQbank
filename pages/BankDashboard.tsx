@@ -8,7 +8,9 @@ import { GoalTrackerWidget } from '../components/GoalTrackerWidget';
 import { TopicsToWatchWidget } from '../components/TopicsToWatchWidget';
 import { TagStatsWidget } from '../components/TagStatsWidget';
 
+
 import { QuestionTreasuryWidget } from '../components/QuestionTreasuryWidget';
+
 
 
 import { Button } from '../components/ui/button';
@@ -16,6 +18,7 @@ import { Button } from '../components/ui/button';
 const BankDashboard: React.FC = () => {
   const { 
     topicsToWatch,
+
 
     tagStats,
     statsByPlatform,
@@ -52,6 +55,7 @@ const BankDashboard: React.FC = () => {
           </div>
         </div>
       
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main column for charts */}
           <div className="lg:col-span-2">
@@ -70,7 +74,9 @@ const BankDashboard: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
           <TopicsToWatchWidget topics={topicsToWatch} />
+          <GoalTrackerWidget />
         </div>
       </div>
     </>
