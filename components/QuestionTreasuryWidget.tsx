@@ -1,11 +1,10 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Separator } from './ui/separator';
 import { Button } from './ui/button';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Database } from 'lucide-react';
 import { cn } from '../lib/utils';
-
+import { Progress } from './ui/progress';
 
 interface StatItem {
   name: string;
@@ -19,62 +18,68 @@ interface QuestionTreasuryWidgetProps {
   statsByChapter: StatItem[];
 }
 
-const StatTable: React.FC<{ title: string; data: StatItem[] }> = ({ title, data }) => (
-  <div>
-    <h3 className="text-lg font-semibold mb-2">{title}</h3>
-    <div className="rounded-md border">
-      <div className="grid grid-cols-3 p-2 font-semibold bg-muted/50">
-        <div>Name</div>
-        <div className="text-right">Attempted</div>
-        <div className="text-right">Total</div>
+const StatTable: React.FC<{ title: string; data: StatItem[] }> = ({ title, data }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div>
+        <h3 className="text-xl font-semibold mb-3">{title}</h3>
+        <p className="text-muted-foreground">No data available.</p>
       </div>
-      <div className="max-h-60 overflow-y-auto">
-        {data.map((item, index) => (
+    );
+  }
 
-          <div key={index} className="grid grid-cols-3 p-2 border-t hover:bg-muted/50 transition-colors">
-
-            <div className="truncate pr-2">{item.name}</div>
-            <div className="text-right">{item.attempted}</div>
-            <div className="text-right">{item.total}</div>
-          </div>
-        ))}
+  return (
+    <div>
+      <h3 className="text-xl font-semibold mb-4">{title}</h3>
+      <div className="space-y-3">
+        {data.map((item, index) => {
+          const percentage = item.total > 0 ? (item.attempted / item.total) * 100 : 0;
+          return (
+            <div key={index} className="transition-all duration-300 ease-in-out p-3 rounded-lg hover:bg-white/10">
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-medium truncate pr-4">{item.name}</span>
+                <span className="text-sm text-muted-foreground">{item.attempted} / {item.total}</span>
+              </div>
+              <Progress value={percentage} />
+            </div>
+          );
+        })}
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const QuestionTreasuryWidget: React.FC<QuestionTreasuryWidgetProps> = ({
   statsByPlatform,
   statsBySubject,
   statsByChapter,
 }) => {
-
   const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <Card>
+    <Card className={cn("glass-card", "glow-border")}>
       <CardHeader
         className="flex flex-row items-center justify-between cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <CardTitle>Question Treasury</CardTitle>
+        <CardTitle className="flex items-center text-2xl">
+          <Database size={24} className="mr-3 text-primary" />
+          Question Treasury
+        </CardTitle>
         <Button variant="ghost" size="icon">
-          <ChevronDown className={cn("transition-transform duration-300", !isOpen && "-rotate-90")} />
+          <ChevronDown className={cn("transition-transform duration-300", !isOpen && "-rotate-180")} />
         </Button>
       </CardHeader>
       <div className={cn(
           "transition-all duration-500 ease-in-out overflow-hidden",
-          isOpen ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-50"
+          isOpen ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
       )}>
-        <CardContent className="space-y-6 pt-4">
+        <CardContent className="grid md:grid-cols-3 gap-8 pt-4">
           <StatTable title="By Platform" data={statsByPlatform} />
-          <Separator />
           <StatTable title="By Subject" data={statsBySubject} />
-          <Separator />
           <StatTable title="By Chapter" data={statsByChapter} />
         </CardContent>
       </div>
-
     </Card>
   );
 };
