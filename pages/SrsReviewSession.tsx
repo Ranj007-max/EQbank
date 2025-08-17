@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
-import { Bookmark, Flame, RefreshCw, CheckCircle, XCircle, BrainCircuit } from 'lucide-react';
+import { Bookmark, Flame, CheckCircle, XCircle, BrainCircuit, Notebook, Flag } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
@@ -29,7 +29,8 @@ const SrsReviewSession: React.FC = () => {
     recordAnswer(currentQuestion.batchId, currentQuestion.id, isCorrect);
   };
 
-  const toggleTag = (tag: 'bookmarked' | 'hard' | 'revise') => {
+  const toggleTag = (tag: 'bookmarked' | 'hard') => {
+    if(!currentQuestion) return;
     const batch = getBatchById(currentQuestion.batchId);
     if (batch) {
       const updatedQuestions = batch.questions.map(q => 
@@ -49,19 +50,19 @@ const SrsReviewSession: React.FC = () => {
 
   if (!sessionStarted) {
     return (
-      <div className="animate-fade-in max-w-2xl mx-auto text-center">
-        <Card className="p-12">
-            <BrainCircuit size={64} className="mx-auto text-primary mb-6" />
-            <h1 className="text-5xl font-bold gradient-text mb-4">Spaced Repetition Review</h1>
+      <div className="animate-fade-in max-w-2xl mx-auto text-center flex flex-col justify-center h-full">
+        <Card className="p-8 sm:p-12">
+            <BrainCircuit size={56} className="mx-auto text-primary mb-6" />
+            <h1 className="text-3xl font-extrabold tracking-tight gradient-text mb-4">Spaced Repetition</h1>
             {questions.length > 0 ? (
             <>
-                <p className="text-muted-foreground mb-8">You have <span className="font-bold text-primary">{questions.length}</span> questions due for review. This will help strengthen your memory.</p>
-                <Button onClick={() => setSessionStarted(true)} size="lg">Start Review Session</Button>
+                <p className="text-muted-foreground mb-8 text-lg">You have <span className="font-bold text-primary">{questions.length}</span> questions due for review.</p>
+                <Button onClick={() => setSessionStarted(true)} size="lg" variant="gradient">Start Review Session</Button>
             </>
             ) : (
             <>
-                <p className="text-muted-foreground mb-8">You have no questions due for review right now. Great job! Come back later.</p>
-                <Button onClick={() => navigate('/')} variant="secondary">Back to Dashboard</Button>
+                <p className="text-muted-foreground mb-8 text-lg">You have no questions due for review. Great job!</p>
+                <Button onClick={() => navigate('/')} variant="outline">Back to Dashboard</Button>
             </>
             )}
         </Card>
@@ -71,15 +72,24 @@ const SrsReviewSession: React.FC = () => {
 
   if (sessionEnded) {
     return (
-        <div className="animate-fade-in max-w-2xl mx-auto text-center">
-            <Card className="p-12">
-                <CheckCircle size={64} className="mx-auto text-green-500 mb-6" />
-                <h1 className="text-5xl font-bold gradient-text text-center">Review Complete!</h1>
-                <p className="text-muted-foreground my-4">You've finished all your due questions for now. Keep up the great work!</p>
-                <Button onClick={() => navigate('/')} size="lg" className="mt-4">Back to Dashboard</Button>
+        <div className="animate-fade-in max-w-2xl mx-auto text-center flex flex-col justify-center h-full">
+            <Card className="p-8 sm:p-12">
+                <CheckCircle size={56} className="mx-auto text-green-500 mb-6" />
+                <h1 className="text-3xl font-extrabold tracking-tight gradient-text text-center">Review Complete!</h1>
+                <p className="text-muted-foreground my-6 text-lg">You've finished all your due questions for now. Keep up the great work!</p>
+                <Button onClick={() => navigate('/')} size="lg" variant="gradient">Back to Dashboard</Button>
             </Card>
         </div>
     );
+  }
+
+  if (!currentQuestion) {
+      // Should not happen if sessionStarted is true and questions.length > 0
+      return (
+        <div className="animate-fade-in max-w-2xl mx-auto text-center">
+             <p className="text-muted-foreground mb-8">Loading question...</p>
+        </div>
+      )
   }
 
   const batchForTags = getBatchById(currentQuestion.batchId);
@@ -88,63 +98,78 @@ const SrsReviewSession: React.FC = () => {
 
   return (
     <div className="animate-fade-in max-w-4xl mx-auto">
-      <div className="mb-4">
-         <Progress value={progressPercentage} className="[&>*]:bg-green-500" />
-        <p className="text-sm font-medium text-muted-foreground text-center mt-2">Question {currentQuestionIndex + 1} of {questions.length}</p>
+       <div className="mb-4">
+        <div className="flex justify-between items-center mb-2">
+            <p className="text-sm font-medium text-muted-foreground">Reviewing Question {currentQuestionIndex + 1} of {questions.length}</p>
+        </div>
+        <Progress value={progressPercentage} className="[&>*]:bg-green-500" />
       </div>
 
-       <Card>
-        <CardHeader>
-            <p className="font-semibold text-lg text-foreground">{currentQuestion.question}</p>
+      <Card className="overflow-hidden">
+        <CardHeader className="p-6">
+            <p className="font-semibold text-xl text-foreground leading-relaxed">{currentQuestion.question}</p>
         </CardHeader>
-        <CardContent>
-            <div className="space-y-3 mb-4">
+        <CardContent className="p-6">
+            <div className="space-y-3">
             {currentQuestion.options.map((option, i) => {
                 const isSelected = selectedOption === option;
                 const isCorrect = currentQuestion.answer === option;
-                let variant: "default" | "secondary" | "destructive" | "outline" = "outline";
+                let variant: "outline" | "success" | "destructive" = "outline";
+                let icon = null;
                 if(selectedOption) {
-                    if (isCorrect) variant = "default";
-                    else if (isSelected) variant = "destructive";
+                    if (isCorrect) {
+                      variant = "success";
+                      icon = <CheckCircle className="mr-2" />;
+                    }
+                    else if (isSelected && !isCorrect) {
+                      variant = "destructive";
+                      icon = <XCircle className="mr-2" />;
+                    }
                 }
                 
                 return (
-                <Button key={i} onClick={() => handleSelectOption(option)} disabled={!!selectedOption} variant={variant} className={cn("w-full justify-start h-auto py-3 whitespace-normal", {
-                    "bg-green-600 hover:bg-green-700 text-primary-foreground": selectedOption && isCorrect,
+                <Button key={i} onClick={() => handleSelectOption(option)} disabled={!!selectedOption} variant={variant} className={cn("w-full justify-start h-auto py-3 whitespace-normal text-base", {
+                    "border-primary ring-2 ring-primary": isSelected && !selectedOption,
                 })}>
-                    <span className="font-mono text-sm mr-3">{String.fromCharCode(65 + i)}.</span>
-                    <span>{option}</span>
+                    {icon}
+                    <span className="font-mono text-sm mr-4 opacity-70">{String.fromCharCode(65 + i)}.</span>
+                    <span className="text-left">{option}</span>
                 </Button>
                 );
             })}
             </div>
              {selectedOption && (
-                <div className="mt-6 p-4 bg-muted rounded-lg border animate-fade-in">
+                <div className="mt-6 p-4 bg-muted/50 rounded-lg border animate-fade-in">
                     <p className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                    {selectedOption === currentQuestion.answer 
-                        ? <CheckCircle className="text-green-500" size={20} /> 
-                        : <XCircle className="text-red-500" size={20} />}
-                    Explanation
+                      <CheckCircle className="text-green-500" size={20} />
+                      Explanation
                     </p>
-                    <p className="text-muted-foreground">{currentQuestion.explanation}</p>
+                    <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
+                      {currentQuestion.explanation}
+                    </div>
                 </div>
                 )}
         </CardContent>
-        <CardFooter className="flex justify-between items-center">
-          {questionForTags ? <div className="flex items-center gap-1">
-             <Button variant="ghost" size="icon" onClick={() => toggleTag('bookmarked')}>
-                <Bookmark className={`transition-colors ${questionForTags.tags.bookmarked ? 'text-yellow-500 fill-yellow-400' : 'text-muted-foreground hover:text-yellow-500'}`}/>
+        <CardFooter className="bg-muted/30 border-t px-6 py-3 flex justify-between items-center">
+          <div className="flex items-center gap-1">
+            {questionForTags && <>
+              <Button variant="ghost" size="icon" onClick={() => toggleTag('bookmarked')} title="Bookmark">
+                  <Bookmark className={`transition-colors ${questionForTags.tags.bookmarked ? 'text-yellow-400 fill-yellow-400/50' : 'text-muted-foreground hover:text-yellow-400'}`}/>
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => toggleTag('hard')} title="Mark as Hard">
+                  <Flame className={`transition-colors ${questionForTags.tags.hard ? 'text-red-500 fill-red-500/50' : 'text-muted-foreground hover:text-red-500'}`}/>
+              </Button>
+            </>}
+            <Button variant="ghost" size="icon" title="Notes (coming soon)" disabled>
+                <Notebook className="text-muted-foreground" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => toggleTag('hard')}>
-                <Flame className={`transition-colors ${questionForTags.tags.hard ? 'text-red-500 fill-red-400' : 'text-muted-foreground hover:text-red-500'}`}/>
+            <Button variant="ghost" size="icon" title="Report Issue (coming soon)" disabled>
+                <Flag className="text-muted-foreground" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => toggleTag('revise')}>
-                <RefreshCw className={`transition-colors ${questionForTags.tags.revise ? 'text-blue-500 fill-blue-400' : 'text-muted-foreground hover:text-blue-500'}`}/>
-            </Button>
-          </div> : <div />}
+          </div>
           {selectedOption && (
-            <Button onClick={goToNext}>
-              {currentQuestionIndex < questions.length - 1 ? 'Next' : 'Finish Review'}
+            <Button onClick={goToNext} variant="gradient">
+              {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'Finish Review'}
             </Button>
           )}
         </CardFooter>

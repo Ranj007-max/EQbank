@@ -6,32 +6,32 @@ import { PlusCircle, Zap } from 'lucide-react';
 import StudyPanel from '../components/StudyPanel';
 import { PerformanceCharts } from '../components/PerformanceCharts';
 import { GoalTrackerWidget } from '../components/GoalTrackerWidget';
-import { RecentActivityWidget } from '../components/RecentActivityWidget'; // Assuming this is the new component
-import { TopicsToWatchWidget } from '../components/TopicsToWatchWidget'; // Assuming this is the new component
-import { LastSessionWidget } from '../components/LastSessionWidget'; // Assuming this is the new component
+import { RecentActivityWidget } from '../components/RecentActivityWidget';
+import { TopicsToWatchWidget } from '../components/TopicsToWatchWidget';
+import { LastSessionWidget } from '../components/LastSessionWidget';
 
 import { Button } from '../components/ui/button';
 
 const BankDashboard: React.FC = () => {
-  const {
-    recentActivity,
+  const { 
+    recentActivity, 
     topicsToWatch,
     lastSession,
     performanceOverTime,
     performanceBySubject
   } = useAnalytics();
-
+  
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   return (
     <>
       <StudyPanel isOpen={isPanelOpen} onOpenChange={setIsPanelOpen} />
-
+      
       <div className="animate-fade-in space-y-8">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-4xl font-bold gradient-text">Dashboard</h1>
-            <p className="text-muted-foreground mt-2 text-lg">
+            <h1 className="text-3xl font-extrabold tracking-tight gradient-text">Dashboard</h1>
+            <p className="text-muted-foreground mt-2 text-base">
               Welcome back! Here's a snapshot of your progress.
             </p>
           </div>
@@ -70,5 +70,3 @@ const BankDashboard: React.FC = () => {
     </>
   );
 };
-
-export default BankDashboard;
