@@ -7,17 +7,21 @@ import StudyPanel from '../components/StudyPanel';
 import { GoalTrackerWidget } from '../components/GoalTrackerWidget';
 import { TopicsToWatchWidget } from '../components/TopicsToWatchWidget';
 import { TagStatsWidget } from '../components/TagStatsWidget';
+
 import { QuestionTreasuryWidget } from '../components/QuestionTreasuryWidget';
+
 
 import { Button } from '../components/ui/button';
 
 const BankDashboard: React.FC = () => {
   const { 
     topicsToWatch,
+
     tagStats,
     statsByPlatform,
     statsBySubject,
     statsByChapter
+
   } = useAnalytics();
   
   const [isPanelOpen, setIsPanelOpen] = useState(false);

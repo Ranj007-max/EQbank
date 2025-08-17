@@ -1,6 +1,6 @@
-# PgQbank - Intelligent Medical MCQ Practice
+# E-Qbank - Intelligent Medical MCQ Practice
 
-PgQbank is a premier, online-only Progressive Web App (PWA) designed for medical students. It serves as an intelligent MCQ practice tool for deep learning and comprehensive performance tracking. The application is meticulously optimized for a responsive, touch-first experience on Safari for iPad Air.
+E-Qbank is a premier, online-only Progressive Web App (PWA) designed for medical students. It serves as an intelligent MCQ practice tool for deep learning and comprehensive performance tracking. The application is meticulously optimized for a responsive, touch-first experience on Safari for iPad Air.
 
 ## Tech Stack
 
