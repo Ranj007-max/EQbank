@@ -70,3 +70,5 @@ const BankDashboard: React.FC = () => {
     </>
   );
 };
+
+export default BankDashboard;
