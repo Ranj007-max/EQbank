@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
-import { PlusCircle, FileText, Clock, Pencil, Check, Zap, Lightbulb, History, BookCopy, ChevronRight, Database, Upload, Download } from 'lucide-react';
+import { PlusCircle, FileText, Clock, Pencil, Zap, Lightbulb, History, BookCopy, ChevronRight, Database, Upload, Download } from 'lucide-react';
 import { Batch, AppData } from '../types';
 import StudyPanel from '../components/StudyPanel';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';

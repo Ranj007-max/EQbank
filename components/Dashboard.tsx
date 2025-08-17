@@ -1,12 +1,11 @@
 import React from 'react';
-import { ArrowRight, BookCopy, BarChart3, Target, CheckCircle, FilePlus2 } from 'lucide-react';
+import { BookCopy, BarChart3, Target, CheckCircle, FilePlus2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
 import { Activity } from '../types';
 import { GoalTrackerWidget } from './GoalTrackerWidget';
 import { PerformanceCharts } from './PerformanceCharts';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './ui/card';
-import { Separator } from './ui/separator';
 import { Button } from './ui/button';
 
 const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
