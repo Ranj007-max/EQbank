@@ -10,7 +10,7 @@ interface LayoutProps {
 const navItems = [
     { to: '/', text: 'Dashboard', icon: LayoutDashboard },
     { to: '/bank', text: 'Question Bank', icon: Library },
-    { to: '/srs-review', text: 'Review', icon: BrainCircuit },
+    { to: '/review', text: 'Review', icon: BrainCircuit },
     { to: '/exams', text: 'Exams', icon: PencilRuler }
 ];
 
