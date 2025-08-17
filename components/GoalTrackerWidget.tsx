@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Progress } from './ui/progress';
+import { ProgressRing } from './ui/progress-ring';
 
 export const GoalTrackerWidget: React.FC = () => {
     const { goal, setGoal, weeklyGoalProgress } = useAnalytics();
@@ -48,15 +48,13 @@ export const GoalTrackerWidget: React.FC = () => {
                         </Button>
                     </div>
                 ) : (
-                    <div className="space-y-3">
-                        <div>
-                            <div className="flex justify-between items-baseline mb-1">
-                                <span className="font-bold text-2xl text-primary">{weeklyGoalProgress.count}</span>
-                                <span className="text-sm font-medium text-muted-foreground">/ {goal?.target || 100} questions</span>
-                            </div>
-                            <Progress value={weeklyGoalProgress.percentage} />
+                    <div className="relative flex justify-center items-center">
+                        <ProgressRing progress={weeklyGoalProgress.percentage} size={160} strokeWidth={16} />
+                        <div className="absolute flex flex-col items-center">
+                            <span className="text-4xl font-bold text-primary">{weeklyGoalProgress.count}</span>
+                            <span className="text-sm font-medium text-muted-foreground">/ {goal?.target || 100}</span>
+                            <span className="text-xs text-muted-foreground mt-1">questions</span>
                         </div>
-                        <p className="text-sm text-center text-muted-foreground">{weeklyGoalProgress.percentage}% complete</p>
                     </div>
                 )}
             </CardContent>

@@ -6,7 +6,7 @@ import { MBBS_SUBJECTS, PLATFORMS } from '../data/constants';
 import { Batch, ParsedMCQ, MCQ } from '../types';
 import { ArrowLeft, LoaderCircle, CheckCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
@@ -123,11 +123,7 @@ const AddQuestions: React.FC = () => {
   
   const renderForm = () => (
     <Card>
-      <CardHeader>
-        <CardTitle>Add New Questions</CardTitle>
-        <CardDescription>Paste your unstructured MCQ text below and let the AI parse it for you.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 pt-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
                 <Label htmlFor="subject">Subject</Label>
@@ -181,10 +177,14 @@ const AddQuestions: React.FC = () => {
 
   return (
     <div className="animate-fade-in max-w-4xl mx-auto space-y-6">
-        <Button variant="ghost" onClick={() => navigate('/bank')} className="flex items-center gap-2 text-sm">
-            <ArrowLeft size={16} />
-            Back to Bank
-        </Button>
+        <div>
+            <Button variant="ghost" onClick={() => navigate('/bank')} className="flex items-center gap-2 text-sm mb-4">
+                <ArrowLeft size={16} />
+                Back to Bank
+            </Button>
+            <h1 className="text-5xl font-bold gradient-text">Add New Questions</h1>
+            <p className="text-muted-foreground mt-2">Paste your unstructured MCQ text below and let the AI parse it for you.</p>
+        </div>
       
       {parsedMCQs ? renderPreview() : renderForm()}
     </div>

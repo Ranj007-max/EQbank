@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
-import { StudyQuestion } from '../types';
 import { Bookmark, Flame, RefreshCw, CheckCircle, XCircle, BrainCircuit } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '../components/ui/card';
@@ -53,7 +52,7 @@ const SrsReviewSession: React.FC = () => {
       <div className="animate-fade-in max-w-2xl mx-auto text-center">
         <Card className="p-12">
             <BrainCircuit size={64} className="mx-auto text-primary mb-6" />
-            <h1 className="text-3xl font-bold text-foreground mb-4">Spaced Repetition Review</h1>
+            <h1 className="text-5xl font-bold gradient-text mb-4">Spaced Repetition Review</h1>
             {questions.length > 0 ? (
             <>
                 <p className="text-muted-foreground mb-8">You have <span className="font-bold text-primary">{questions.length}</span> questions due for review. This will help strengthen your memory.</p>
@@ -75,7 +74,7 @@ const SrsReviewSession: React.FC = () => {
         <div className="animate-fade-in max-w-2xl mx-auto text-center">
             <Card className="p-12">
                 <CheckCircle size={64} className="mx-auto text-green-500 mb-6" />
-                <h1 className="text-3xl font-bold text-foreground text-center">Review Complete!</h1>
+                <h1 className="text-5xl font-bold gradient-text text-center">Review Complete!</h1>
                 <p className="text-muted-foreground my-4">You've finished all your due questions for now. Keep up the great work!</p>
                 <Button onClick={() => navigate('/')} size="lg" className="mt-4">Back to Dashboard</Button>
             </Card>
