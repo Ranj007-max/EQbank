@@ -4,21 +4,20 @@ import { useAnalytics } from '../context/AnalyticsContext';
 import { PlusCircle, Zap } from 'lucide-react';
 
 import StudyPanel from '../components/StudyPanel';
-import { PerformanceCharts } from '../components/PerformanceCharts';
 import { GoalTrackerWidget } from '../components/GoalTrackerWidget';
-import { RecentActivityWidget } from '../components/RecentActivityWidget';
 import { TopicsToWatchWidget } from '../components/TopicsToWatchWidget';
-import { LastSessionWidget } from '../components/LastSessionWidget';
+import { TagStatsWidget } from '../components/TagStatsWidget';
+import { QuestionTreasuryWidget } from '../components/QuestionTreasuryWidget';
 
 import { Button } from '../components/ui/button';
 
 const BankDashboard: React.FC = () => {
   const { 
-    recentActivity, 
     topicsToWatch,
-    lastSession,
-    performanceOverTime,
-    performanceBySubject
+    tagStats,
+    statsByPlatform,
+    statsBySubject,
+    statsByChapter
   } = useAnalytics();
   
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -44,7 +43,7 @@ const BankDashboard: React.FC = () => {
             </Button>
             <Button onClick={() => setIsPanelOpen(true)} variant="gradient">
               <Zap size={18} className="mr-2" />
-              Start Study Session
+              Start Study session
             </Button>
           </div>
         </div>
@@ -52,21 +51,26 @@ const BankDashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main column for charts */}
           <div className="lg:col-span-2">
-             <PerformanceCharts timeData={performanceOverTime} subjectData={performanceBySubject} />
+             <QuestionTreasuryWidget
+                statsByPlatform={statsByPlatform}
+                statsBySubject={statsBySubject}
+                statsByChapter={statsByChapter}
+              />
           </div>
 
           {/* Right sidebar for smaller widgets */}
           <div className="space-y-6">
             <GoalTrackerWidget />
-            <LastSessionWidget lastSession={lastSession} />
+            <TagStatsWidget stats={tagStats} />
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <RecentActivityWidget activities={recentActivity} />
           <TopicsToWatchWidget topics={topicsToWatch} />
         </div>
       </div>
     </>
   );
 };
+
+export default BankDashboard;
