@@ -16,7 +16,7 @@ const SrsReviewSession: React.FC = () => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [sessionEnded, setSessionEnded] = useState(false);
 
-  const questions = useMemo(() => dueReviewQuestions, [dueReviewQuestions]);
+  const questions = useMemo(() => dueReviewQuestions || [], [dueReviewQuestions]);
   const currentQuestion = questions[currentQuestionIndex];
   const selectedOption = currentQuestion ? selectedAnswers[currentQuestion.id] : undefined;
   
