@@ -5,6 +5,7 @@ import { MCQ } from '../types';
 import { CheckCircle, XCircle, Clock, Hash, Percent, Bookmark, Flame, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import { ExamHistoryTable } from '../components/ExamHistoryTable';
 
 const ExamResults: React.FC = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -120,6 +121,11 @@ const ExamResults: React.FC = () => {
           );
         })}
       </div>
+      <div className="mt-16">
+        <h2 className="text-3xl font-bold text-center mb-8 gradient-text">Overall Exam History</h2>
+        <ExamHistoryTable />
+      </div>
+
       <div className="mt-8 text-center">
         <Button size="lg" asChild>
           <Link to="/exams">Create Another Exam</Link>
