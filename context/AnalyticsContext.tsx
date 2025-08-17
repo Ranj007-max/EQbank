@@ -23,6 +23,7 @@ interface AnalyticsContextType {
   // Derived Analytics
   allQuestions: MCQ[];
   dueReviewQuestions: StudyQuestion[];
+  tagStats: { bookmarked: number; hard: number; revise: number; mistaked: number; };
   performanceBySubject: Array<{ subject: string; correct: number; total: number; accuracy: number; }>;
   topicsToWatch: Array<{ subject: string; accuracy: number; }>;
   recentActivity: Activity[];
@@ -121,6 +122,17 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
   // --- Computational Logic & Derived State (The "Engine") ---
 
   const allQuestions = useMemo(() => batches.flatMap(b => b.questions), [batches]);
+
+  const tagStats = useMemo(() => {
+    const stats = { bookmarked: 0, hard: 0, revise: 0, mistaked: 0 };
+    allQuestions.forEach(q => {
+      if (q.tags.bookmarked) stats.bookmarked++;
+      if (q.tags.hard) stats.hard++;
+      if (q.tags.revise) stats.revise++;
+      if (q.lastAttemptCorrect === false) stats.mistaked++;
+    });
+    return stats;
+  }, [allQuestions]);
 
   const dueReviewQuestions = useMemo(() => {
     const today = new Date();
@@ -301,7 +313,7 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
     studyHistory, addStudySession,
     examHistory, addExamSession, getExamById,
     goal, setGoal,
-    allQuestions, dueReviewQuestions, performanceBySubject, topicsToWatch, recentActivity, lastSession, overallStats,
+    allQuestions, dueReviewQuestions, tagStats, performanceBySubject, topicsToWatch, recentActivity, lastSession, overallStats,
     statsBySubject, statsByPlatform, exportData, importData, weeklyGoalProgress, performanceOverTime
   };
 

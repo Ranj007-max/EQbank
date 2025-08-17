@@ -6,19 +6,17 @@ import { PlusCircle, Zap } from 'lucide-react';
 import StudyPanel from '../components/StudyPanel';
 import { PerformanceCharts } from '../components/PerformanceCharts';
 import { GoalTrackerWidget } from '../components/GoalTrackerWidget';
-import { RecentActivityWidget } from '../components/RecentActivityWidget';
 import { TopicsToWatchWidget } from '../components/TopicsToWatchWidget';
-import { LastSessionWidget } from '../components/LastSessionWidget';
+import { TagStatsWidget } from '../components/TagStatsWidget';
 
 import { Button } from '../components/ui/button';
 
 const BankDashboard: React.FC = () => {
   const { 
-    recentActivity, 
     topicsToWatch,
-    lastSession,
     performanceOverTime,
-    performanceBySubject
+    performanceBySubject,
+    tagStats
   } = useAnalytics();
   
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -58,15 +56,16 @@ const BankDashboard: React.FC = () => {
           {/* Right sidebar for smaller widgets */}
           <div className="space-y-6">
             <GoalTrackerWidget />
-            <LastSessionWidget lastSession={lastSession} />
+            <TagStatsWidget stats={tagStats} />
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <RecentActivityWidget activities={recentActivity} />
           <TopicsToWatchWidget topics={topicsToWatch} />
         </div>
       </div>
     </>
   );
 };
+
+export default BankDashboard;
