@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { useAnalytics } from '../context/AnalyticsContext';
 import { StudyQuestion, StudySessionResult } from '../types';
-import { Bookmark, Flame, RefreshCw, CheckCircle, XCircle, LoaderCircle } from 'lucide-react';
+import { Bookmark, Flame, CheckCircle, XCircle, LoaderCircle, Notebook, Flag } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
@@ -44,9 +44,7 @@ const StudySession: React.FC = () => {
         if (savedIndex) setCurrentQuestionIndex(Number(savedIndex));
       } catch (e) {
         console.error("Failed to parse saved study session:", e);
-        sessionStorage.removeItem('studySession');
-        sessionStorage.removeItem('studySessionAnswers');
-        sessionStorage.removeItem('studySessionIndex');
+        sessionStorage.clear();
         navigate('/bank');
       }
     } else {
@@ -67,9 +65,7 @@ const StudySession: React.FC = () => {
 
   const handleSelectOption = (option: string) => {
     if (selectedOption || !currentQuestion) return;
-
     setSelectedAnswers(prev => ({ ...prev, [currentQuestion.id]: option }));
-    
     const isCorrect = option === currentQuestion.answer;
     recordAnswer(currentQuestion.batchId, currentQuestion.id, isCorrect);
   };
@@ -126,30 +122,31 @@ const StudySession: React.FC = () => {
 
   if (sessionEnded) {
     return (
-        <div className="animate-fade-in max-w-4xl mx-auto">
-            <Card className="p-8">
+        <div className="animate-fade-in max-w-2xl mx-auto flex flex-col justify-center h-full">
+            <Card className="p-4 sm:p-8 text-center">
                 <CardHeader>
-                    <h1 className="text-3xl font-bold text-foreground text-center">Session Complete!</h1>
+                    <h1 className="text-3xl font-bold text-foreground">Session Complete!</h1>
+                    <p className="text-5xl font-bold gradient-text py-4">{sessionStats?.score}%</p>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex justify-around items-center my-8 p-6 bg-muted rounded-lg">
+                    <div className="flex justify-around items-center my-4 p-6 bg-muted rounded-lg">
                         <div className="text-center">
-                            <p className="text-4xl font-bold text-primary">{sessionStats?.score}%</p>
-                            <p className="text-muted-foreground">Score</p>
+                            <p className="text-3xl font-bold text-green-500">{sessionStats?.correctCount}</p>
+                            <p className="text-sm text-muted-foreground mt-1">Correct</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-4xl font-bold text-green-500">{sessionStats?.correctCount}</p>
-                            <p className="text-muted-foreground">Correct</p>
+                            <p className="text-3xl font-bold text-red-500">{sessionStats?.incorrectCount}</p>
+                            <p className="text-sm text-muted-foreground mt-1">Incorrect</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-4xl font-bold text-red-500">{sessionStats?.incorrectCount}</p>
-                            <p className="text-muted-foreground">Incorrect</p>
+                            <p className="text-3xl font-bold">{sessionState?.questions.length}</p>
+                            <p className="text-sm text-muted-foreground mt-1">Total</p>
                         </div>
                     </div>
                 </CardContent>
-                <CardFooter className="text-center flex justify-center">
-                    <Button onClick={() => navigate('/bank')} size="lg">
-                        Back to Bank
+                <CardFooter className="flex justify-center">
+                    <Button onClick={() => navigate('/bank')} size="lg" variant="gradient">
+                        Back to Dashboard
                     </Button>
                 </CardFooter>
             </Card>
@@ -174,62 +171,75 @@ const StudySession: React.FC = () => {
       <div className="mb-4">
         <div className="flex justify-between items-center mb-2">
             <p className="text-sm font-medium text-muted-foreground">Question {currentQuestionIndex + 1} of {sessionState.questions.length}</p>
-            <Button variant="link" className="text-destructive" onClick={endSession}>End Session</Button>
+            <Button variant="link" size="sm" className="text-destructive" onClick={endSession}>End Session</Button>
         </div>
         <Progress value={progressPercentage} />
       </div>
 
-      <Card>
-        <CardHeader>
-            <p className="font-semibold text-lg text-foreground">{currentQuestion.question}</p>
+      <Card className="overflow-hidden">
+        <CardHeader className="p-6">
+            <p className="font-semibold text-xl text-foreground leading-relaxed">{currentQuestion.question}</p>
         </CardHeader>
-        <CardContent>
-            <div className="space-y-3 mb-4">
+        <CardContent className="p-6">
+            <div className="space-y-3">
             {currentQuestion.options.map((option, i) => {
                 const isSelected = selectedOption === option;
                 const isCorrect = currentQuestion.answer === option;
-                let variant: "default" | "secondary" | "destructive" | "outline" = "outline";
+                let variant: "outline" | "success" | "destructive" = "outline";
+                let icon = null;
                 if(selectedOption) {
-                    if (isCorrect) variant = "default";
-                    else if (isSelected && !isCorrect) variant = "destructive";
+                    if (isCorrect) {
+                      variant = "success";
+                      icon = <CheckCircle className="mr-2" />;
+                    }
+                    else if (isSelected && !isCorrect) {
+                      variant = "destructive";
+                      icon = <XCircle className="mr-2" />;
+                    }
                 }
                 
                 return (
-                <Button key={i} onClick={() => handleSelectOption(option)} disabled={!!selectedOption} variant={variant} className={cn("w-full justify-start h-auto py-3 whitespace-normal", {
-                    "bg-green-600 hover:bg-green-700 text-primary-foreground": selectedOption && isCorrect,
+                <Button key={i} onClick={() => handleSelectOption(option)} disabled={!!selectedOption} variant={variant} className={cn("w-full justify-start h-auto py-3 whitespace-normal text-base", {
+                    "border-primary ring-2 ring-primary": isSelected && !selectedOption, // Show selection before revealing answer
                 })}>
-                    <span className="font-mono text-sm mr-3">{String.fromCharCode(65 + i)}.</span>
-                    <span>{option}</span>
+                    {icon}
+                    <span className="font-mono text-sm mr-4 opacity-70">{String.fromCharCode(65 + i)}.</span>
+                    <span className="text-left">{option}</span>
                 </Button>
                 );
             })}
             </div>
              {selectedOption && (
-                <div className="mt-6 p-4 bg-muted rounded-lg border animate-fade-in">
+                <div className="mt-6 p-4 bg-muted/50 rounded-lg border animate-fade-in">
                     <p className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                    {selectedOption === currentQuestion.answer 
-                        ? <CheckCircle className="text-green-500" size={20} /> 
-                        : <XCircle className="text-red-500" size={20} />}
-                    Explanation
+                      <CheckCircle className="text-green-500" size={20} />
+                      Explanation
                     </p>
-                    <p className="text-muted-foreground">{currentQuestion.explanation}</p>
+                    <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
+                      {currentQuestion.explanation}
+                    </div>
                 </div>
                 )}
         </CardContent>
-        <CardFooter className="flex justify-between items-center">
-          {questionForTags ? <div className="flex items-center gap-1">
-             <Button variant="ghost" size="icon" onClick={() => toggleTag('bookmarked')}>
-                <Bookmark className={`transition-colors ${questionForTags.tags.bookmarked ? 'text-yellow-500 fill-yellow-400' : 'text-muted-foreground hover:text-yellow-500'}`}/>
+        <CardFooter className="bg-muted/30 border-t px-6 py-3 flex justify-between items-center">
+          <div className="flex items-center gap-1">
+            {questionForTags && <>
+              <Button variant="ghost" size="icon" onClick={() => toggleTag('bookmarked')} title="Bookmark">
+                  <Bookmark className={`transition-colors ${questionForTags.tags.bookmarked ? 'text-yellow-400 fill-yellow-400/50' : 'text-muted-foreground hover:text-yellow-400'}`}/>
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => toggleTag('hard')} title="Mark as Hard">
+                  <Flame className={`transition-colors ${questionForTags.tags.hard ? 'text-red-500 fill-red-500/50' : 'text-muted-foreground hover:text-red-500'}`}/>
+              </Button>
+            </>}
+            <Button variant="ghost" size="icon" title="Notes (coming soon)" disabled>
+                <Notebook className="text-muted-foreground" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => toggleTag('hard')}>
-                <Flame className={`transition-colors ${questionForTags.tags.hard ? 'text-red-500 fill-red-400' : 'text-muted-foreground hover:text-red-500'}`}/>
+            <Button variant="ghost" size="icon" title="Report Issue (coming soon)" disabled>
+                <Flag className="text-muted-foreground" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => toggleTag('revise')}>
-                <RefreshCw className={`transition-colors ${questionForTags.tags.revise ? 'text-blue-500 fill-blue-400' : 'text-muted-foreground hover:text-blue-500'}`}/>
-            </Button>
-          </div> : <div />}
+          </div>
           {selectedOption && (
-            <Button onClick={goToNext}>
+            <Button onClick={goToNext} variant="gradient">
               {currentQuestionIndex < sessionState.questions.length - 1 ? 'Next Question' : 'Finish Session'}
             </Button>
           )}
