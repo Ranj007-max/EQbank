@@ -1,3 +1,4 @@
+// Resolving potential merge conflict by re-applying styles.
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
@@ -6,9 +7,9 @@ import { PlusCircle, Zap } from 'lucide-react';
 import StudyPanel from '../components/StudyPanel';
 import { PerformanceCharts } from '../components/PerformanceCharts';
 import { GoalTrackerWidget } from '../components/GoalTrackerWidget';
-import { RecentActivityWidget } from '../components/RecentActivityWidget'; // Assuming this is the new component
-import { TopicsToWatchWidget } from '../components/TopicsToWatchWidget'; // Assuming this is the new component
-import { LastSessionWidget } from '../components/LastSessionWidget'; // Assuming this is the new component
+import { RecentActivityWidget } from '../components/RecentActivityWidget';
+import { TopicsToWatchWidget } from '../components/TopicsToWatchWidget';
+import { LastSessionWidget } from '../components/LastSessionWidget';
 
 import { Button } from '../components/ui/button';
 

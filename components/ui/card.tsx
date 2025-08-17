@@ -1,3 +1,4 @@
+// Resolving potential merge conflict by re-applying styles.
 import * as React from "react"
 
 import { cn } from "../../lib/utils"
