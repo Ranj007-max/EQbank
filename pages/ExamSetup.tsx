@@ -146,7 +146,8 @@ const ExamSetup: React.FC = () => {
             </CardFooter>
         </Card>
 
-        <div className="mt-12">
+        <div className="mt-16">
+            <h2 className="text-3xl font-bold text-center mb-8 gradient-text">Recent Exams</h2>
             <ExamHistoryTable />
         </div>
     </div>
