@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
-import { PlusCircle, Zap, BrainCircuit } from 'lucide-react';
+import { PlusCircle, Zap, BrainCircuit, Download, Upload } from 'lucide-react';
 
 import StudyPanel from '../components/StudyPanel';
 import { GoalTrackerWidget } from '../components/GoalTrackerWidget';
@@ -10,6 +10,7 @@ import { TagStatsWidget } from '../components/TagStatsWidget';
 import { QuestionTreasuryWidget } from '../components/QuestionTreasuryWidget';
 import { Button } from '../components/ui/button';
 import { cn } from '../lib/utils';
+import { AppData } from '../types';
 
 const BankDashboard: React.FC = () => {
   const { 
@@ -17,14 +18,48 @@ const BankDashboard: React.FC = () => {
     tagStats,
     statsByPlatform,
     statsBySubject,
-    statsByChapter
+    statsByChapter,
+    exportData,
+    importData
   } = useAnalytics();
   
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const text = e.target?.result;
+          if (typeof text === 'string') {
+            const jsonData = JSON.parse(text) as AppData;
+            importData(jsonData);
+          }
+        } catch (error) {
+          console.error("Failed to parse JSON file:", error);
+          alert("Error: Invalid JSON file.");
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
 
   return (
     <>
       <StudyPanel isOpen={isPanelOpen} onOpenChange={setIsPanelOpen} />
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden"
+        accept=".json"
+      />
       
       <div className="animate-fade-in space-y-12">
         <div className="flex justify-between items-start">
@@ -36,7 +71,15 @@ const BankDashboard: React.FC = () => {
               Your central hub for managing, reviewing, and mastering questions. Analyze your performance and dive into targeted study sessions.
             </p>
           </div>
-          <div className="flex items-center gap-4 mt-2">
+          <div className="flex flex-wrap items-center gap-4 mt-2">
+            <Button variant="outline" className="glass-card" onClick={handleImportClick}>
+              <Upload size={18} className="mr-2" />
+              Import
+            </Button>
+            <Button variant="outline" className="glass-card" onClick={exportData}>
+              <Download size={18} className="mr-2" />
+              Export
+            </Button>
             <Button variant="outline" asChild className="glass-card">
               <Link to="/bank/add">
                 <PlusCircle size={18} className="mr-2" />
@@ -51,18 +94,20 @@ const BankDashboard: React.FC = () => {
         </div>
       
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
              <QuestionTreasuryWidget
                 statsByPlatform={statsByPlatform}
                 statsBySubject={statsBySubject}
                 statsByChapter={statsByChapter}
               />
           </div>
+        </div>
 
-          <div className="space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+                <TagStatsWidget stats={tagStats} />
+            </div>
             <GoalTrackerWidget />
-            <TagStatsWidget stats={tagStats} />
-          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
