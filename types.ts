@@ -8,6 +8,7 @@ export interface MCQ {
     bookmarked: boolean;
     hard: boolean;
     revise: boolean;
+    mistaked: boolean;
   };
   notes?: string;
   lastAttemptCorrect: boolean | null; // null: unattempted, true: correct, false: incorrect
