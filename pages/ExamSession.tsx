@@ -3,12 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { useAnalytics } from '../context/AnalyticsContext';
 import type { ExamQuestion, ExamSession } from '../types';
-import { ChevronLeft, ChevronRight, Power, LoaderCircle } from 'lucide-react';
-import Timer from '../components/Timer';
+import { ChevronLeft, ChevronRight, LoaderCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Progress } from '../components/ui/progress';
-import { ProgressRing } from '../components/ui/progress-ring';
-import { Card, CardHeader, CardContent, CardFooter } from '../components/ui/card';
 import { cn } from '../lib/utils';
 import { useSound } from '../hooks/useSound';
 import Confetti from '../components/Confetti';
@@ -33,7 +29,6 @@ const ExamSession: React.FC = () => {
   
   const [sessionState, setSessionState] = useState<SessionState | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
@@ -46,10 +41,9 @@ const ExamSession: React.FC = () => {
     down,
     movement: [mx],
     direction: [xDir],
-    distance,
     cancel,
   }) => {
-    if (down && distance > window.innerWidth / 4) {
+    if (down && Math.abs(mx) > window.innerWidth / 4) {
       cancel();
       if (xDir > 0) {
         changeQuestion(currentIndex - 1);
@@ -61,7 +55,7 @@ const ExamSession: React.FC = () => {
 
   useEffect(() => {
     if (sessionState && !isPaused) {
-      const totalTime = sessionState.config.numQuestions * 60;
+      const totalTime = sessionState.config.questionCount * 60;
       const elapsed = (Date.now() - sessionState.startTime) / 1000;
       setTimeRemaining(totalTime - elapsed);
 
@@ -229,7 +223,7 @@ const ExamSession: React.FC = () => {
             <div
               className="h-2.5 rounded-full"
               style={{
-                width: `${(timeRemaining / (sessionState.config.numQuestions * 60)) * 100}%`,
+                width: `${(timeRemaining / (sessionState.config.questionCount * 60)) * 100}%`,
                 backgroundColor: '#00A8FF',
                 transition: 'width 0.5s linear'
               }}

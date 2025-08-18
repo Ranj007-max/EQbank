@@ -4,7 +4,7 @@ import { useAnalytics } from '../context/AnalyticsContext';
 import { ExamQuestion } from '../types';
 import { ExamHistoryTable } from '../components/ExamHistoryTable';
 import CreateExamPanel from '../components/CreateExamPanel';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import useLocalStorage from '../hooks/useLocalStorage';
 import { debounce } from '../lib/utils';
 
 export interface ExamConfig {
@@ -33,7 +33,7 @@ const ExamSetup: React.FC = () => {
 
   const allQuestions = useMemo((): ExamQuestion[] => 
     batches.flatMap(batch => 
-      batch.questions.map(q => ({ ...q, batchId: batch.id, subject: batch.subject }))
+      batch.questions.map(q => ({ ...q, batchId: batch.id, subject: batch.subject, platform: batch.platform }))
     ), [batches]);
 
   const availableSubjects = useMemo(() => [...new Set(batches.map(b => b.subject))], [batches]);
@@ -44,7 +44,7 @@ const ExamSetup: React.FC = () => {
       if (!subjectMatch) return false;
 
       const tagMatch = config.tags.length === 0 || config.tags.some(tag => {
-        if (tag === 'Image-Based') return q.imageUrl !== null;
+        if (tag === 'Image-Based') return q.questionType === 'Image-based';
         if (tag === 'Unattempted') return q.lastAttemptCorrect === null;
         if (tag === 'Hard') return q.tags?.hard;
         // High-Yield is not a direct property, so we can't filter by it here
@@ -80,10 +80,6 @@ const ExamSetup: React.FC = () => {
       setPresets([...presets, { ...config, name }]);
       alert(`Preset "${name}" saved!`);
     }
-  };
-
-  const loadPreset = (preset: ExamConfig) => {
-    setConfig(preset);
   };
 
   return (
