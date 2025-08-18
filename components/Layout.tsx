@@ -1,5 +1,6 @@
-import { BookOpenCheck, Sun, Moon, LayoutDashboard, Library, BrainCircuit, PencilRuler } from 'lucide-react';
+import { BookOpenCheck, Sun, Moon, LayoutDashboard, Library, BrainCircuit, PencilRuler, Plus, Minus } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import { useFontSize } from '../hooks/useFontSize';
 import { Button } from './ui/button';
 import { NavItem } from './NavItem';
 
@@ -16,6 +17,7 @@ const navItems = [
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { theme, toggleTheme } = useTheme();
+  const { increaseFontSize, decreaseFontSize } = useFontSize();
 
   return (
     <div className="fixed inset-0 overflow-hidden">
@@ -33,16 +35,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </nav>
 
           <div className="p-4 border-t">
-              <Button
-                  variant="ghost"
-                  onClick={toggleTheme}
-                  aria-label="Toggle theme"
-                  className="w-full justify-start gap-3 px-3 text-muted-foreground hover:text-foreground"
-                >
-                  <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                  <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                  <span>{theme === 'dark' ? 'Light' : 'Dark'} Mode</span>
-                </Button>
+              <div className="flex items-center justify-between">
+                <Button
+                    variant="ghost"
+                    onClick={toggleTheme}
+                    aria-label="Toggle theme"
+                    className="w-full justify-start gap-3 px-3 text-muted-foreground hover:text-foreground"
+                  >
+                    <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                    <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                    <span>{theme === 'dark' ? 'Light' : 'Dark'} Mode</span>
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="icon" onClick={decreaseFontSize} aria-label="Decrease font size">
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={increaseFontSize} aria-label="Increase font size">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+              </div>
           </div>
         </aside>
 
