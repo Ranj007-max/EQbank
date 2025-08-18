@@ -12,6 +12,7 @@ import ExamResults from './pages/ExamResults';
 import SrsReviewSession from './pages/SrsReviewSession';
 import ReviewHub from './pages/ReviewHub';
 import ExamHistoryPage from './pages/ExamHistoryPage';
+import TaggedQuestionsPage from './pages/TaggedQuestionsPage';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/bank/treasury" element={<QuestionsTreasury />} />
         <Route path="/bank/add" element={<AddQuestions />} />
         <Route path="/bank/batch/:batchId" element={<BatchReview />} />
+        <Route path="/bank/tagged/:tag" element={<TaggedQuestionsPage />} />
         <Route path="/study" element={<StudySession />} />
         <Route path="/review" element={<ReviewHub />} />
         <Route path="/review/history" element={<ExamHistoryPage />} />

@@ -1,21 +1,24 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Button } from './ui/button';
 import QuestionDrillDownView from './QuestionDrillDownView';
 import { useAnalytics } from '../context/AnalyticsContext';
+import { MCQ } from '../types';
 
 const COLORS = ['#00A8FF', '#00FF85', '#FFC700', '#FF5733', '#C70039'];
 
 const TreasuryContent = () => {
   const [activeTab, setActiveTab] = useState('subject');
-  const { statsBySubject, statsByPlatform, allQuestions } = useAnalytics();
+  const { statsBySubject, statsByPlatform, batches } = useAnalytics();
 
-  const getQuestionsBySubject = (subject) => {
-    return allQuestions.filter(q => q.subject === subject);
+  const getQuestionsBySubject = (subject: string): MCQ[] => {
+    const relevantBatches = batches.filter(b => b.subject === subject);
+    return relevantBatches.flatMap(b => b.questions);
   }
 
-  const getQuestionsByPlatform = (platform) => {
-    return allQuestions.filter(q => q.platform === platform);
+  const getQuestionsByPlatform = (platform: string): MCQ[] => {
+    const relevantBatches = batches.filter(b => b.platform === platform);
+    return relevantBatches.flatMap(b => b.questions);
   }
 
   return (
@@ -34,7 +37,13 @@ const TreasuryContent = () => {
   );
 };
 
-const TabButton = ({ title, isActive, onClick }) => (
+interface TabButtonProps {
+    title: string;
+    isActive: boolean;
+    onClick: () => void;
+}
+
+const TabButton: React.FC<TabButtonProps> = ({ title, isActive, onClick }) => (
     <Button
         variant="ghost"
         onClick={onClick}
@@ -44,7 +53,12 @@ const TabButton = ({ title, isActive, onClick }) => (
     </Button>
 );
 
-const SubjectVault = ({ data, getQuestions }) => (
+interface VaultProps {
+    data: Array<{ name: string; total: number; attempted: number; }>;
+    getQuestions: (name: string) => MCQ[];
+}
+
+const SubjectVault: React.FC<VaultProps> = ({ data, getQuestions }) => (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div className="glass-card p-6 h-[400px]">
             <h3 className="text-xl font-bold mb-4">Rankings by Subject</h3>
@@ -80,14 +94,14 @@ const SubjectVault = ({ data, getQuestions }) => (
     </div>
 );
 
-const PlatformVault = ({ data, getQuestions }) => (
+const PlatformVault: React.FC<VaultProps> = ({ data, getQuestions }) => (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div className="glass-card p-6 h-[400px]">
             <h3 className="text-xl font-bold mb-4">Distribution by Platform</h3>
             <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                     <Pie data={data} dataKey="total" nameKey="name" cx="50%" cy="50%" outerRadius={120} fill="#8884d8">
-                        {data.map((entry, index) => (
+                        {data.map((_, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                     </Pie>
