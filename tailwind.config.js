@@ -19,9 +19,16 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        sans: ['Poppins', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+        slab: ['Roboto Slab', 'serif'],
       },
       colors: {
+        'light-bg': '#F9FAFB',
+        'dark-bg': '#1C1C1E',
+        'accent-violet': '#8B5CF6',
+        'option-unselected-bg': '#E5E7EB',
+        'option-unselected-text': '#111827',
+        'option-hover-bg': '#D1D5DB',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
