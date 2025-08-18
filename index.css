@@ -150,6 +150,22 @@
     mask-composite: exclude;
     pointer-events: none;
   }
+
+  .btn-premium-label {
+    @apply font-semibold tracking-wide;
+    color: #D4AF37;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    background-color: transparent;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-premium-label:hover {
+    text-shadow: 0 0 16px rgba(255, 255, 255, 0.8);
+    text-decoration: underline;
+    text-decoration-color: #D4AF37;
+    text-underline-offset: 4px;
+    background-color: rgba(212, 175, 55, 0.05);
+  }
 }
 
 @keyframes slide-in-fade {

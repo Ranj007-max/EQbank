@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
-import { ArrowLeft, Bookmark, Flame, RefreshCw, EyeOff } from 'lucide-react';
+import { ArrowLeft, EyeOff } from 'lucide-react';
 import { MCQ } from '../types';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '../components/ui/card';
@@ -119,10 +119,10 @@ const BatchReview: React.FC = () => {
                             <Button variant="link" onClick={() => toggleCardFlip(mcq.id)} className="p-0 h-auto">
                                 <EyeOff size={16} className="mr-2"/> Hide Answer
                             </Button>
-                            <div className="flex items-center gap-1">
-                                <Button variant="ghost" size="icon" onClick={() => toggleTag(mcq.id, 'bookmarked')}><Bookmark className={`transition-colors ${mcq.tags.bookmarked ? 'text-yellow-500 fill-yellow-400' : 'text-muted-foreground hover:text-yellow-500'}`}/></Button>
-                                <Button variant="ghost" size="icon" onClick={() => toggleTag(mcq.id, 'hard')}><Flame className={`transition-colors ${mcq.tags.hard ? 'text-red-500 fill-red-400' : 'text-muted-foreground hover:text-red-500'}`}/></Button>
-                                <Button variant="ghost" size="icon" onClick={() => toggleTag(mcq.id, 'revise')}><RefreshCw className={`transition-colors ${mcq.tags.revise ? 'text-blue-500 fill-blue-400' : 'text-muted-foreground hover:text-blue-500'}`}/></Button>
+                            <div className="flex items-center gap-2">
+                                <Button variant="ghost" onClick={() => toggleTag(mcq.id, 'bookmarked')} className={cn("btn-premium-label", mcq.tags.bookmarked && "underline !text-yellow-400")}>Bookmark</Button>
+                                <Button variant="ghost" onClick={() => toggleTag(mcq.id, 'hard')} className={cn("btn-premium-label", mcq.tags.hard && "underline !text-red-500")}>Mark as Hard</Button>
+                                <Button variant="ghost" onClick={() => toggleTag(mcq.id, 'revise')} className={cn("btn-premium-label", mcq.tags.revise && "underline !text-blue-400")}>Revise Later</Button>
                             </div>
                         </CardFooter>
                     </Card>

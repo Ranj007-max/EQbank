@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
 import { MCQ } from '../types';
-import { CheckCircle, XCircle, Bookmark, Flame, RefreshCw, ChevronDown } from 'lucide-react';
+import { CheckCircle, XCircle, ChevronDown } from 'lucide-react';
+
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { ExamHistoryTable } from '../components/ExamHistoryTable';
@@ -96,15 +97,15 @@ const ExamResults: React.FC = () => {
               <Card key={questionData.id} className={cn("overflow-hidden", isCorrect ? 'border-l-4 border-green-500' : 'border-l-4 border-red-500')}>
                   <CardHeader className="flex flex-row justify-between items-start">
                       <p className="font-semibold text-foreground flex-1 pr-4">{index + 1}. {questionData.question}</p>
-                      {currentQuestionFromBatch && <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => toggleTag(questionData.id, questionData.batchId, 'bookmarked')}>
-                              <Bookmark className={`transition-colors ${currentQuestionFromBatch.tags.bookmarked ? 'text-yellow-500 fill-yellow-400' : 'text-muted-foreground hover:text-yellow-500'}`}/>
+                      {currentQuestionFromBatch && <div className="flex items-center gap-2">
+                          <Button variant="ghost" onClick={() => toggleTag(questionData.id, questionData.batchId, 'bookmarked')} className={cn("btn-premium-label", currentQuestionFromBatch.tags.bookmarked && "underline !text-yellow-400")}>
+                              Bookmark
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => toggleTag(questionData.id, questionData.batchId, 'hard')}>
-                              <Flame className={`transition-colors ${currentQuestionFromBatch.tags.hard ? 'text-red-500 fill-red-400' : 'text-muted-foreground hover:text-red-500'}`}/>
+                          <Button variant="ghost" onClick={() => toggleTag(questionData.id, questionData.batchId, 'hard')} className={cn("btn-premium-label", currentQuestionFromBatch.tags.hard && "underline !text-red-500")}>
+                              Mark as Hard
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => toggleTag(questionData.id, questionData.batchId, 'revise')}>
-                              <RefreshCw className={`transition-colors ${currentQuestionFromBatch.tags.revise ? 'text-blue-500 fill-blue-400' : 'text-muted-foreground hover:text-blue-500'}`}/>
+                          <Button variant="ghost" onClick={() => toggleTag(questionData.id, questionData.batchId, 'revise')} className={cn("btn-premium-label", currentQuestionFromBatch.tags.revise && "underline !text-blue-400")}>
+                              Revise Later
                           </Button>
                       </div>}
                   </CardHeader>

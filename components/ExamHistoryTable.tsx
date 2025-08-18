@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { ChevronDown, History } from 'lucide-react';
+import { History } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface ExamHistoryTableProps {
@@ -51,8 +51,8 @@ export const ExamHistoryTable: React.FC<ExamHistoryTableProps> = ({ limit }) => 
           <History size={24} className="mr-3 text-primary" />
           Exam History
         </CardTitle>
-        <Button variant="ghost" size="icon">
-            <ChevronDown className={cn("transition-transform duration-300", !isOpen && "-rotate-180")} />
+        <Button variant="ghost" className="btn-premium-label text-sm">
+            {isOpen ? 'Collapse' : 'Expand'}
         </Button>
       </CardHeader>
       {isOpen && (

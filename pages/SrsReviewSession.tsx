@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
-import { Bookmark, Flame, CheckCircle, XCircle, BrainCircuit, Notebook, Flag, Settings, SlidersHorizontal, ArrowRight } from 'lucide-react';
+import { CheckCircle, XCircle, BrainCircuit, SlidersHorizontal, ArrowRight } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import ReviewSessionSummary from '../components/ReviewSessionSummary';
 import { Card, CardContent, CardFooter, CardHeader } from '../components/ui/card';
@@ -141,7 +141,7 @@ const SrsReviewSession: React.FC = () => {
                     </Button>
                     <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
                         <DialogTrigger asChild>
-                            <Button size="lg" variant="outline" className="rounded-full gap-2"><Settings size={20}/></Button>
+                            <Button variant="ghost" className="btn-premium-label">Settings</Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
@@ -297,20 +297,22 @@ const SrsReviewSession: React.FC = () => {
                         )}
                     </CardContent>
                     <CardFooter className="bg-muted/30 border-t px-6 py-3 flex justify-between items-center">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
                         {questionForTags && <>
-                            <Button variant="ghost" size="icon" onClick={() => toggleTag('bookmarked')} title="Bookmark"><Bookmark className={`transition-colors ${questionForTags.tags.bookmarked ? 'text-yellow-400 fill-yellow-400/50' : 'text-muted-foreground hover:text-yellow-400'}`}/></Button>
-                            <Button variant="ghost" size="icon" onClick={() => toggleTag('hard')} title="Mark as Hard"><Flame className={`transition-colors ${questionForTags.tags.hard ? 'text-red-500 fill-red-500/50' : 'text-muted-foreground hover:text-red-500'}`}/></Button>
+                            <Button variant="ghost" onClick={() => toggleTag('bookmarked')} className={cn("btn-premium-label", questionForTags.tags.bookmarked && "underline !text-yellow-400")}>Bookmark</Button>
+                            <Button variant="ghost" onClick={() => toggleTag('hard')} className={cn("btn-premium-label", questionForTags.tags.hard && "underline !text-red-500")}>Mark as Hard</Button>
                         </>}
                         <Dialog open={isNotesModalOpen} onOpenChange={setIsNotesModalOpen}>
-                            <DialogTrigger asChild><Button variant="ghost" size="icon" title="Notes"><Notebook className="text-muted-foreground hover:text-primary" /></Button></DialogTrigger>
+                            <DialogTrigger asChild>
+                                <Button variant="ghost" className="btn-premium-label">Notes</Button>
+                            </DialogTrigger>
                             <DialogContent>
                             <DialogHeader><DialogTitle>Notes for this Question</DialogTitle></DialogHeader>
                             <Textarea value={currentNotes} onChange={(e) => setCurrentNotes(e.target.value)} rows={8} placeholder="Write your notes here..." />
                             <Button onClick={() => { if(currentQuestion) { updateQuestionNotes(currentQuestion.batchId, currentQuestion.id, currentNotes); } setIsNotesModalOpen(false); }}>Save Notes</Button>
                             </DialogContent>
                         </Dialog>
-                        <Button variant="ghost" size="icon" title="Report Issue (coming soon)" disabled><Flag className="text-muted-foreground" /></Button>
+                        <Button variant="ghost" className="btn-premium-label opacity-50" disabled>Report Issue</Button>
                         </div>
                         {selectedOption && (
                         <Button onClick={goToNext} className="btn-gradient rounded-full">

@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { useAnalytics } from '../context/AnalyticsContext';
 import type { ExamQuestion, ExamSession } from '../types';
-import { ChevronLeft, ChevronRight, Power, LoaderCircle, MoreVertical } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Power, LoaderCircle } from 'lucide-react';
 import Timer from '../components/Timer';
 import { Button } from '../components/ui/button';
 import { Progress } from '../components/ui/progress';
@@ -158,9 +158,10 @@ const ExamSession: React.FC = () => {
             </div>
         </div>
         <div className="relative">
-          <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(prev => !prev)}>
-            <MoreVertical size={20} className="text-accent" />
-          </Button>
+          <Button variant="ghost" onClick={() => setIsMenuOpen(prev => !prev)} className="btn-premium-label">
+            Menu
+
+             </Button>
           {isMenuOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-xl z-10 border">
               <ul className="py-1">

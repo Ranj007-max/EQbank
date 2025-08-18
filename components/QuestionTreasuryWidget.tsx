@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { ChevronDown, Database } from 'lucide-react';
+import { Database } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Progress } from './ui/progress';
 
@@ -66,8 +66,8 @@ export const QuestionTreasuryWidget: React.FC<QuestionTreasuryWidgetProps> = ({
           <Database size={24} className="mr-3 text-primary" />
           Question Treasury
         </CardTitle>
-        <Button variant="ghost" size="icon">
-          <ChevronDown className={cn("transition-transform duration-300", !isOpen && "-rotate-180")} />
+        <Button variant="ghost" className="btn-premium-label text-sm">
+            {isOpen ? 'Collapse' : 'Expand'}
         </Button>
       </CardHeader>
       <div className={cn(
