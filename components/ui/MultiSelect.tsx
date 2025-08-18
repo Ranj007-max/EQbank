@@ -32,7 +32,7 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
         : [...selected, value];
       onChange(newSelected);
     };
-
+    
     const filteredOptions = options.filter(option => option.label.toLowerCase().includes(search.toLowerCase()));
 
     return (
@@ -74,7 +74,7 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                 <DialogTitle>{placeholder}</DialogTitle>
             </DialogHeader>
             <div className="p-4">
-                <Input
+                <Input 
                     placeholder="Search..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -83,7 +83,7 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                     {filteredOptions.map(option => (
                         <div key={option.value} className="flex items-center space-x-2">
-                            <Checkbox
+                            <Checkbox 
                                 id={`multiselect-${option.value}`}
                                 checked={selected.includes(option.value)}
                                 onCheckedChange={() => handleSelect(option.value)}
