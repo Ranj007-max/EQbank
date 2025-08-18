@@ -16,6 +16,7 @@ export interface MCQ {
   };
   difficulty: 'Easy' | 'Medium' | 'Hard';
   questionType: 'MCQ' | 'Assertion-Reason' | 'Case' | 'Image-based';
+  imageURL?: string;
   notes?: string;
   lastAttemptCorrect: boolean | null; // null: unattempted, true: correct, false: incorrect
   srsLevel: number;
