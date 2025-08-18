@@ -19,8 +19,8 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        serif: ['Roboto Slab', 'serif'],
+        sans: ['InterVariable', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        display: ['Jost', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -64,6 +64,7 @@ module.exports = {
       },
       boxShadow: {
         premium: '0 4px 20px rgba(0,0,0,0.1)',
+        neumorphic: '0 4px 8px rgba(0,0,0,0.2), inset 0 -2px 4px rgba(255,255,255,0.1)',
       },
       keyframes: {
         "accordion-down": {
