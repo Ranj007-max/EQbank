@@ -7,8 +7,8 @@ import { QuestionTreasuryWidget } from '../components/QuestionTreasuryWidget';
 import { Button } from '../components/ui/button';
 import { AppData } from '../types';
 import { Input } from '../components/ui/input';
-import { TreasuryFilters } from '../components/TreasuryFilters';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { TagStatsWidget } from '../components/TagStatsWidget';
 
 const BankDashboard: React.FC = () => {
   const { 
@@ -146,14 +146,11 @@ const BankDashboard: React.FC = () => {
           </div>
         </div>
       
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-          {/* Left Sidebar for Filters */}
-          <aside className="lg:col-span-1 lg:sticky lg:top-24 space-y-6">
-              <TreasuryFilters />
-          </aside>
+        <div className="space-y-8">
+          <TagStatsWidget />
 
           {/* Main Content Area */}
-          <main className="lg:col-span-3 space-y-6">
+          <main className="space-y-6">
             <div className="flex items-center gap-4">
                 <div className="relative w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />

@@ -7,6 +7,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter } from '../components/ui/card';
 import { Checkbox } from '../components/ui/checkbox';
 import { Label } from '../components/ui/label';
+import { Input } from '../components/ui/input';
 import { ExamHistoryTable } from '../components/ExamHistoryTable';
 
 const QUESTION_STATUSES = {
@@ -120,17 +121,21 @@ const ExamSetup: React.FC = () => {
                 </div>
                 
                 <div className="space-y-3">
-                    <Label htmlFor="num-questions" className="text-lg font-semibold text-foreground">Number of Questions: <span className="font-bold text-primary">{Math.min(numQuestions, filteredQuestions.length)}</span> / {filteredQuestions.length} available</Label>
-                    <input 
-                        id="num-questions"
-                        type="range"
-                        min="10"
-                        max={Math.max(10, filteredQuestions.length)}
-                        step="5"
-                        value={numQuestions}
-                        onChange={e => setNumQuestions(Number(e.target.value))}
-                        className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                    />
+                    <Label htmlFor="num-questions" className="text-lg font-semibold text-foreground">Number of Questions</Label>
+                    <div className="flex items-center gap-4">
+                        <Input
+                            id="num-questions"
+                            type="number"
+                            min="1"
+                            max={filteredQuestions.length}
+                            value={numQuestions}
+                            onChange={e => setNumQuestions(Math.max(1, Math.min(filteredQuestions.length, Number(e.target.value))))}
+                            className="w-32"
+                        />
+                        <span className="text-muted-foreground text-sm">
+                            / {filteredQuestions.length} available
+                        </span>
+                    </div>
                 </div>
             </CardContent>
             <CardFooter>
