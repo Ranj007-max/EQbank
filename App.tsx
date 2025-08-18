@@ -9,6 +9,8 @@ import ExamSetup from './pages/ExamSetup';
 import ExamSession from './pages/ExamSession';
 import ExamResults from './pages/ExamResults';
 import SrsReviewSession from './pages/SrsReviewSession';
+import ReviewHub from './pages/ReviewHub';
+import ExamHistoryPage from './pages/ExamHistoryPage';
 
 function App() {
   return (
@@ -19,7 +21,9 @@ function App() {
         <Route path="/bank/add" element={<AddQuestions />} />
         <Route path="/bank/batch/:batchId" element={<BatchReview />} />
         <Route path="/study" element={<StudySession />} />
-        <Route path="/review" element={<SrsReviewSession />} />
+        <Route path="/review" element={<ReviewHub />} />
+        <Route path="/review/history" element={<ExamHistoryPage />} />
+        <Route path="/srs-review" element={<SrsReviewSession />} />
         <Route path="/exams" element={<ExamSetup />} />
         <Route path="/exam/session" element={<ExamSession />} />
         <Route path="/exam/results/:sessionId" element={<ExamResults />} />

@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { useAnalytics } from '../context/AnalyticsContext';
 import { StudyQuestion, StudySessionResult } from '../types';
-import { Bookmark, Flame, CheckCircle, XCircle, LoaderCircle, Notebook, Flag } from 'lucide-react';
+import { CheckCircle, XCircle, LoaderCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
@@ -222,21 +222,13 @@ const StudySession: React.FC = () => {
                 )}
         </CardContent>
         <CardFooter className="bg-muted/30 border-t px-6 py-3 flex justify-between items-center">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             {questionForTags && <>
-              <Button variant="ghost" size="icon" onClick={() => toggleTag('bookmarked')} title="Bookmark">
-                  <Bookmark className={`transition-colors ${questionForTags.tags.bookmarked ? 'text-yellow-400 fill-yellow-400/50' : 'text-muted-foreground hover:text-yellow-400'}`}/>
-              </Button>
-              <Button variant="ghost" size="icon" onClick={() => toggleTag('hard')} title="Mark as Hard">
-                  <Flame className={`transition-colors ${questionForTags.tags.hard ? 'text-red-500 fill-red-500/50' : 'text-muted-foreground hover:text-red-500'}`}/>
-              </Button>
+                <Button variant="ghost" onClick={() => toggleTag('bookmarked')} className={cn("btn-premium-label", questionForTags.tags.bookmarked && "underline !text-yellow-400")}>Bookmark</Button>
+                <Button variant="ghost" onClick={() => toggleTag('hard')} className={cn("btn-premium-label", questionForTags.tags.hard && "underline !text-red-500")}>Mark as Hard</Button>
             </>}
-            <Button variant="ghost" size="icon" title="Notes (coming soon)" disabled>
-                <Notebook className="text-muted-foreground" />
-            </Button>
-            <Button variant="ghost" size="icon" title="Report Issue (coming soon)" disabled>
-                <Flag className="text-muted-foreground" />
-            </Button>
+            <Button variant="ghost" className="btn-premium-label opacity-50" disabled>Notes</Button>
+            <Button variant="ghost" className="btn-premium-label opacity-50" disabled>Report Issue</Button>
           </div>
           {selectedOption && (
             <Button onClick={goToNext} variant="gradient">
