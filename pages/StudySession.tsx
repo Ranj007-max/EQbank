@@ -11,7 +11,7 @@ import { MCQ } from '../types';
 
 const StudySession: React.FC = () => {
   const navigate = useNavigate();
-  const { isStudying, studyQuestions, recordAnswer, endStudySession, getResults } = useStudy();
+  const { isStudying, studyQuestions, recordAnswer, endStudySession } = useStudy();
   const { updateQuestion } = useBatches();
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);

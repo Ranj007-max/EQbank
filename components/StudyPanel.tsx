@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
 import { Zap } from 'lucide-react';
-import { StudyQuestion } from '../types';
+import { Batch, MCQ, StudyQuestion } from '../types';
 import { Button } from './ui/button';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
@@ -37,16 +37,16 @@ const StudyPanel: React.FC<StudyPanelProps> = ({ isOpen, onOpenChange }) => {
   const [numQuestions, setNumQuestions] = useState(20);
   
   const allQuestions = useMemo((): StudyQuestion[] => 
-    batches.flatMap(batch => 
-      batch.questions.map(q => ({...q, batchId: batch.id}))
+    batches.flatMap((batch: Batch) =>
+      batch.questions.map((q: MCQ) => ({...q, batchId: batch.id, subject: batch.subject}))
     ), [batches]);
 
-  const availableSubjects = useMemo(() => [...new Set(batches.map(b => b.subject))], [batches]);
-  const availablePlatforms = useMemo(() => [...new Set(batches.map(b => b.platform))], [batches]);
+  const availableSubjects = useMemo(() => [...new Set(batches.map((b: Batch) => b.subject))], [batches]);
+  const availablePlatforms = useMemo(() => [...new Set(batches.map((b: Batch) => b.platform))], [batches]);
 
   const filteredQuestions = useMemo(() => {
-    return allQuestions.filter(q => {
-      const batch = batches.find(b => b.id === q.batchId);
+    return allQuestions.filter((q: StudyQuestion) => {
+      const batch = batches.find((b: Batch) => b.id === q.batchId);
       if (!batch) return false;
 
       const subjectMatch = selectedSubjects.length === 0 || selectedSubjects.includes(batch.subject);

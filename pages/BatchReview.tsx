@@ -30,7 +30,7 @@ const BatchReview: React.FC = () => {
   };
 
   const toggleTag = (mcqId: string, tag: keyof MCQ['tags']) => {
-    const updatedQuestions = batch.questions.map(q => {
+    const updatedQuestions = batch.questions.map((q: MCQ) => {
       if (q.id === mcqId) {
         return { ...q, tags: { ...q.tags, [tag]: !q.tags[tag] } };
       }
@@ -74,7 +74,7 @@ const BatchReview: React.FC = () => {
       </div>
       
       <div className="space-y-8">
-        {batch.questions.map((mcq, index) => (
+        {batch.questions.map((mcq: MCQ, index: number) => (
           <div key={mcq.id} className="flashcard-container">
             <div className={cn("flashcard", flippedCards[mcq.id] && "is-flipped")}>
                 {/* Front of Card */}
@@ -100,7 +100,7 @@ const BatchReview: React.FC = () => {
                         </CardHeader>
                         <CardContent className="flex-grow">
                             <div className="space-y-2 mb-4">
-                                {mcq.options.map((option, i) => (
+                                {mcq.options.map((option: string, i: number) => (
                                     <div key={i} className={cn("p-3 border rounded-md text-sm",
                                         option === mcq.answer
                                         ? 'bg-green-500/10 border-green-500/30 text-green-800 dark:text-green-300 font-semibold'

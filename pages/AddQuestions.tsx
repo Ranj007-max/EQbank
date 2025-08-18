@@ -86,6 +86,7 @@ const AddQuestions: React.FC = () => {
       platform,
       questions: questionsToSave.map((mcq): MCQ => ({
         id: uuidv4(),
+        batchId: '', // This will be replaced by the actual batch id in the context
         ...mcq,
         difficulty: 'Medium',
         questionType: 'MCQ',

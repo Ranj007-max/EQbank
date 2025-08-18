@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button';
 import { History } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { ExamSession } from '../types';
 
 interface ExamHistoryTableProps {
   limit?: number;
@@ -69,7 +70,7 @@ export const ExamHistoryTable: React.FC<ExamHistoryTableProps> = ({ limit }) => 
               </div>
               {/* Body */}
               <div className="divide-y divide-border/20">
-                {displayedHistory.map(exam => (
+                {displayedHistory.map((exam: ExamSession) => (
                   <Link
                     key={exam.id}
                     to={`/exam/results/${exam.id}`}

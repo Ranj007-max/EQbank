@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import * as dataService from '../services/dataService';
-import { Activity, Tag, UserGoal } from '../types';
+import { Activity, AppData, Batch, ExamSession, Tag, UserGoal } from '../types';
 
 // Define the shape of the analytics data
 interface AnalyticsData {
@@ -15,12 +15,21 @@ interface AnalyticsData {
   recentActivity: Activity[];
   performanceOverTime: Array<{ date: string; score: number; }>;
   goal: UserGoal | null;
+  examHistory: ExamSession[];
+  weeklyGoalProgress: { count: number, percentage: number };
+  batches: Batch[];
+  statsBySubject: Array<{ name: string }>;
+  statsByPlatform: Array<{ name: string }>;
 }
 
 interface AnalyticsContextType extends AnalyticsData {
   loading: boolean;
   refreshAnalytics: () => Promise<void>;
   setGoal: (goal: UserGoal | null) => Promise<void>;
+  exportData: () => void;
+  importData: (data: AppData) => Promise<void>;
+  updateBatch: (batch: Batch) => Promise<void>;
+  getBatchById: (id: string) => Batch | undefined;
 }
 
 const defaultAnalyticsData: AnalyticsData = {
@@ -30,6 +39,11 @@ const defaultAnalyticsData: AnalyticsData = {
     recentActivity: [],
     performanceOverTime: [],
     goal: { type: 'weeklyQuestions', target: 100 },
+    examHistory: [],
+    weeklyGoalProgress: { count: 0, percentage: 0 },
+    batches: [],
+    statsBySubject: [],
+    statsByPlatform: [],
 };
 
 const AnalyticsContext = createContext<AnalyticsContextType | undefined>(undefined);
@@ -46,7 +60,12 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
         tagStats,
         recentActivity,
         performanceOverTime,
-        goal
+        goal,
+        examHistory,
+        weeklyGoalProgress,
+        batches,
+        statsBySubject,
+        statsByPlatform,
     ] = await Promise.all([
         dataService.getOverallStats(),
         dataService.getPerformanceBySubject(),
@@ -54,6 +73,11 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
         dataService.getRecentActivity(),
         dataService.getPerformanceOverTime(),
         dataService.getGoal(),
+        dataService.getExamHistory(),
+        dataService.getWeeklyGoalProgress(),
+        dataService.getBatches(),
+        dataService.getStatsBySubject(),
+        dataService.getStatsByPlatform(),
     ]);
 
     setAnalyticsData({
@@ -63,6 +87,11 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
         recentActivity,
         performanceOverTime,
         goal,
+        examHistory,
+        weeklyGoalProgress,
+        batches,
+        statsBySubject,
+        statsByPlatform,
     });
     setLoading(false);
   }, []);
@@ -76,11 +105,33 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
     await refreshAnalytics();
   };
 
+  const exportData = () => {
+    dataService.exportData();
+  }
+
+  const importData = async (data: AppData) => {
+    await dataService.importAppData(data);
+    await refreshAnalytics();
+  }
+
+  const updateBatch = async (batch: Batch) => {
+    await dataService.updateBatch(batch);
+    await refreshAnalytics();
+  }
+
+  const getBatchById = (id: string) => {
+    return analyticsData.batches.find(b => b.id === id);
+  }
+
   const value: AnalyticsContextType = {
     ...analyticsData,
     loading,
     refreshAnalytics,
     setGoal,
+    exportData,
+    importData,
+    updateBatch,
+    getBatchById,
   };
 
   return <AnalyticsContext.Provider value={value}>{children}</AnalyticsContext.Provider>;
