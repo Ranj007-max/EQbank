@@ -10,6 +10,8 @@ import { Progress } from '../components/ui/progress';
 import { ProgressRing } from '../components/ui/progress-ring';
 import { Card, CardHeader, CardContent, CardFooter } from '../components/ui/card';
 import { cn } from '../lib/utils';
+import { useSound } from '../hooks/useSound';
+import Confetti from '../components/Confetti';
 
 interface SessionState {
   questions: ExamQuestion[];
@@ -28,6 +30,9 @@ const ExamSession: React.FC = () => {
   const [sessionState, setSessionState] = useState<SessionState | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+  const [isAnswered, setIsAnswered] = useState(false);
+  const playCorrectSound = useSound('/sounds/correct-ding.mp3');
 
   useEffect(() => {
     const savedSession = sessionStorage.getItem('examSession');
@@ -66,6 +71,8 @@ const ExamSession: React.FC = () => {
 
   useEffect(() => {
     sessionStorage.setItem('examSessionIndex', String(currentIndex));
+    setFeedback(null);
+    setIsAnswered(false);
   }, [currentIndex]);
   
   const currentQuestion = sessionState?.questions[currentIndex];
@@ -113,8 +120,15 @@ const ExamSession: React.FC = () => {
   };
 
   const handleSelectAnswer = (option: string) => {
-    if (!currentQuestion) return;
+    if (!currentQuestion || isAnswered) return;
     setSessionState(prev => prev ? { ...prev, answers: { ...prev.answers, [currentQuestion.id]: option } } : null);
+    setIsAnswered(true);
+    if (option === currentQuestion.answer) {
+      setFeedback('correct');
+      playCorrectSound();
+    } else {
+      setFeedback('incorrect');
+    }
   };
   
   if (!sessionState || !currentQuestion) {
@@ -129,6 +143,7 @@ const ExamSession: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-background font-inter text-foreground">
+      {feedback === 'correct' && <Confetti />}
       <style>{`
         .progress-gradient .progress-bar {
           background-image: linear-gradient(90deg, hsl(var(--secondary)), hsl(var(--primary)));
@@ -195,15 +210,27 @@ const ExamSession: React.FC = () => {
                   <div className="space-y-3">
                   {currentQuestion.options.map((option, i) => {
                       const isSelected = sessionState.answers[currentQuestion.id] === option;
+                      const isCorrect = option === currentQuestion.answer;
+                      let feedbackClass = '';
+                      if (isSelected && feedback === 'correct') {
+                        feedbackClass = 'animate-green-pulse bg-success text-success-foreground';
+                      } else if (isSelected && feedback === 'incorrect') {
+                        feedbackClass = 'animate-shake bg-destructive text-destructive-foreground';
+                      } else if (isAnswered && isCorrect) {
+                        feedbackClass = 'bg-success text-success-foreground';
+                      }
+
                       return (
                         <Button
                           key={i}
                           variant="outline"
                           onClick={() => handleSelectAnswer(option)}
+                          disabled={isAnswered}
                           className={cn(
                             "w-full h-auto justify-start p-4 text-base whitespace-normal rounded-full transition-all duration-200",
                             "bg-gray-200/50 dark:bg-gray-800/50 border-transparent hover:bg-gray-300/70 dark:hover:bg-gray-700/70 hover:-translate-y-px",
-                            isSelected && "bg-primary text-primary-foreground hover:bg-primary/90"
+                            isSelected && "bg-primary text-primary-foreground hover:bg-primary/90",
+                            feedbackClass
                           )}
                         >
                             <span className="font-mono text-sm mr-4 opacity-70">{String.fromCharCode(65 + i)}.</span>

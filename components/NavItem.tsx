@@ -4,7 +4,7 @@ export const NavItem: React.FC<{ to: string, children: React.ReactNode, icon: Re
     const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium transition-colors ${
       isActive
-        ? 'bg-primary/10 text-primary'
+        ? 'bg-primary/10 text-primary animate-pulse'
         : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
     }`;
 

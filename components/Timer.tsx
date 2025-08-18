@@ -11,6 +11,7 @@ interface TimerProps {
 
 const Timer: React.FC<TimerProps> = ({ initialSeconds, onTimeUp, isPaused, className }) => {
   const [seconds, setSeconds] = useState(initialSeconds);
+  const isLowTime = seconds < initialSeconds * 0.1;
 
   useEffect(() => {
     if (isPaused) return;
@@ -34,7 +35,7 @@ const Timer: React.FC<TimerProps> = ({ initialSeconds, onTimeUp, isPaused, class
   };
 
   return (
-    <div className={cn("flex items-center gap-1 font-mono", className)}>
+    <div className={cn("flex items-center gap-1 font-mono", className, isLowTime && "animate-warning-flash text-destructive")}>
       <TimerIcon size={16} className="mr-1" />
       <span>{formatTime()}</span>
     </div>

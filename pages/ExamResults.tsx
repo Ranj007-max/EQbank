@@ -8,6 +8,7 @@ import { Button } from '../components/ui/button';
 import { ExamHistoryTable } from '../components/ExamHistoryTable';
 import { ProgressRing } from '../components/ui/progress-ring';
 import { cn } from '../lib/utils';
+import { useCountUp } from '../hooks/useCountUp';
 
 const ExamResults: React.FC = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -15,6 +16,10 @@ const ExamResults: React.FC = () => {
   const [isExplanationOpen, setIsExplanationOpen] = useState<Record<string, boolean>>({});
 
   const examSession = useMemo(() => sessionId ? getExamById(sessionId) : undefined, [sessionId, getExamById]);
+  const animatedScore = useCountUp(examSession?.score || 0, 1000);
+  const animatedCorrect = useCountUp(examSession?.correctAnswers || 0, 1000);
+  const animatedIncorrect = useCountUp((examSession?.totalQuestions || 0) - (examSession?.correctAnswers || 0), 1000);
+
 
   if (!examSession) {
     return (
@@ -58,19 +63,19 @@ const ExamResults: React.FC = () => {
       <Card className="glass-card p-6">
         <div className="flex flex-col md:flex-row items-center justify-around gap-8">
           <div className="relative">
-            <ProgressRing progress={examSession.score} size={160} strokeWidth={12} />
+            <ProgressRing progress={animatedScore} size={160} strokeWidth={12} />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-4xl font-bold">{examSession.score}</span>
+              <span className="text-4xl font-bold">{animatedScore}</span>
               <span className="text-muted-foreground">Score</span>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-center">
             <div className="p-4 rounded-lg">
-              <p className="text-3xl font-bold text-green-500">{examSession.correctAnswers}</p>
+              <p className="text-3xl font-bold text-green-500">{animatedCorrect}</p>
               <p className="text-sm font-medium text-muted-foreground">Correct</p>
             </div>
             <div className="p-4 rounded-lg">
-              <p className="text-3xl font-bold text-red-500">{examSession.totalQuestions - examSession.correctAnswers}</p>
+              <p className="text-3xl font-bold text-red-500">{animatedIncorrect}</p>
               <p className="text-sm font-medium text-muted-foreground">Incorrect</p>
             </div>
             <div className="p-4 rounded-lg">
