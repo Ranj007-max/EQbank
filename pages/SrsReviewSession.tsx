@@ -12,17 +12,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
- feat/revamp-review-section
 import { Tag, StudyQuestion } from '../types';
 import { MultiSelect } from '../components/ui/MultiSelect';
-
 
 interface ReviewSettings {
   questionLimit: number;
   subjects: string[];
   tags: Tag[];
 }
-
 
 const SrsReviewSession: React.FC = () => {
   const navigate = useNavigate();
@@ -43,14 +40,12 @@ const SrsReviewSession: React.FC = () => {
     tags: [],
   });
 
- feat/revamp-review-section
   const availableSubjects = useMemo(() => statsBySubject.map(s => s.name), [statsBySubject]);
-
+  
   const availableTags = useMemo((): Tag[] => {
-    const tags: Tag[] = ['bookmarked', 'hard', 'revise', 'mistaked'];
-    return tags.filter(tag => tagStats[tag] > 0);
+    const validTags: Tag[] = ['bookmarked', 'hard', 'revise', 'mistaked'];
+    return validTags.filter(tag => tagStats[tag] > 0);
   }, [tagStats]);
-
 
   const questions = useMemo(() => {
     let filteredQuestions = dueReviewQuestions || [];
@@ -63,19 +58,17 @@ const SrsReviewSession: React.FC = () => {
       });
     }
 
-
     if (reviewSettings.tags.length > 0) {
       filteredQuestions = filteredQuestions.filter(q => {
         return reviewSettings.tags.every(tag => q.tags[tag]);
       });
     }
-
+    
     return filteredQuestions.slice(0, reviewSettings.questionLimit);
 
   }, [dueReviewQuestions, reviewSettings, getBatchById]);
 
   const currentQuestion = sessionStarted ? sessionQuestions[currentQuestionIndex] : questions[currentQuestionIndex];
-
   const selectedOption = currentQuestion ? selectedAnswers[currentQuestion.id] : undefined;
   
   useEffect(() => {
@@ -106,7 +99,6 @@ const SrsReviewSession: React.FC = () => {
     setSelectedAnswers({});
     setSessionEnded(false);
     setSessionStarted(true);
-
   };
 
   const toggleTag = (tag: 'bookmarked' | 'hard') => {
@@ -155,10 +147,10 @@ const SrsReviewSession: React.FC = () => {
                             <div className="space-y-6 py-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="question-limit">Max Questions</Label>
-                                    <Input
-                                      id="question-limit"
-                                      type="number"
-                                      value={reviewSettings.questionLimit}
+                                    <Input 
+                                      id="question-limit" 
+                                      type="number" 
+                                      value={reviewSettings.questionLimit} 
                                       onChange={e => setReviewSettings(rs => ({...rs, questionLimit: Math.max(1, parseInt(e.target.value) || 1)}))}
                                       placeholder="e.g., 20"
                                     />
@@ -199,7 +191,7 @@ const SrsReviewSession: React.FC = () => {
 
   if (sessionEnded) {
     return (
-      <ReviewSessionSummary
+      <ReviewSessionSummary 
         sessionQuestions={sessionQuestions}
         answers={selectedAnswers}
         onRestart={handleRestart}
@@ -234,7 +226,7 @@ const SrsReviewSession: React.FC = () => {
             <div className="flex justify-between items-start gap-4">
               <p className="font-semibold text-xl text-foreground leading-relaxed flex-1">{currentQuestion.question}</p>
               <div className="flex flex-col items-end gap-2 text-right">
-                <Badge variant="outline" className="whitespace-nowrap">SRS Lvl: {currentQuestion.srsLevel}</Badge>
+                <Badge variant="outline" className="whitespace-nowrap">SRS Lvl: {currentQuestion.s_srsLevel}</Badge>
                 {currentQuestion.srsLevel === 0 ? (
                   <Badge variant="secondary" className="bg-blue-500/10 text-blue-700 dark:text-blue-300">New</Badge>
                 ) : (
@@ -304,18 +296,16 @@ const SrsReviewSession: React.FC = () => {
                 <DialogHeader>
                   <DialogTitle>Notes for this Question</DialogTitle>
                 </DialogHeader>
-                <Textarea
+                <Textarea 
                   value={currentNotes}
                   onChange={(e) => setCurrentNotes(e.target.value)}
                   rows={8}
                   placeholder="Write your notes here..."
                 />
                 <Button onClick={() => {
-                    
                   if(currentQuestion) {
                     updateQuestionNotes(currentQuestion.batchId, currentQuestion.id, currentNotes);
                   }
-
                   setIsNotesModalOpen(false);
                 }}>Save Notes</Button>
               </DialogContent>
