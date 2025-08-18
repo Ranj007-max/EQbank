@@ -1,160 +1,56 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
-import { useAnalytics } from '../context/AnalyticsContext';
-import { StudyQuestion, StudySessionResult } from '../types';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useStudy } from '../context/StudyContext';
+import { useBatches } from '../context/BatchContext';
 import { CheckCircle, XCircle, LoaderCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
 import { cn } from '../lib/utils';
-
-type SessionState = {
-    questions: StudyQuestion[];
-    config: StudySessionResult['config'];
-};
+import { MCQ } from '../types';
 
 const StudySession: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { getBatchById, updateBatch, addStudySession, recordAnswer } = useAnalytics();
+  const { isStudying, studyQuestions, recordAnswer, endStudySession, getResults } = useStudy();
+  const { updateQuestion } = useBatches();
 
-  const [sessionState, setSessionState] = useState<SessionState | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
-  const [sessionEnded, setSessionEnded] = useState(false);
+  const [answeredQuestions, setAnsweredQuestions] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const savedSession = sessionStorage.getItem('studySession');
-    const savedAnswers = sessionStorage.getItem('studySessionAnswers');
-    const savedIndex = sessionStorage.getItem('studySessionIndex');
-
-    if (location.state) {
-      const data = location.state as SessionState;
-      sessionStorage.setItem('studySession', JSON.stringify(data));
-      sessionStorage.removeItem('studySessionAnswers');
-      sessionStorage.removeItem('studySessionIndex');
-      setSessionState(data);
-      setCurrentQuestionIndex(0);
-      setSelectedAnswers({});
-    } else if (savedSession) {
-      try {
-        setSessionState(JSON.parse(savedSession));
-        if (savedAnswers) setSelectedAnswers(JSON.parse(savedAnswers));
-        if (savedIndex) setCurrentQuestionIndex(Number(savedIndex));
-      } catch (e) {
-        console.error("Failed to parse saved study session:", e);
-        sessionStorage.clear();
-        navigate('/bank');
-      }
-    } else {
-      navigate('/bank');
+    if (!isStudying) {
+      navigate('/bank', { replace: true });
     }
-  }, [location.state, navigate]);
+  }, [isStudying, navigate]);
 
-  useEffect(() => {
-    sessionStorage.setItem('studySessionAnswers', JSON.stringify(selectedAnswers));
-  }, [selectedAnswers]);
-
-  useEffect(() => {
-    sessionStorage.setItem('studySessionIndex', String(currentQuestionIndex));
-  }, [currentQuestionIndex]);
-
-  const currentQuestion = sessionState?.questions[currentQuestionIndex];
-  const selectedOption = currentQuestion ? selectedAnswers[currentQuestion.id] : undefined;
+  const currentQuestion = studyQuestions[currentQuestionIndex];
+  const selectedOption = currentQuestion ? answeredQuestions[currentQuestion.id] : undefined;
 
   const handleSelectOption = (option: string) => {
     if (selectedOption || !currentQuestion) return;
-    setSelectedAnswers(prev => ({ ...prev, [currentQuestion.id]: option }));
+
     const isCorrect = option === currentQuestion.answer;
-    recordAnswer(currentQuestion.batchId, currentQuestion.id, isCorrect);
+    recordAnswer(currentQuestion.id, currentQuestion.batchId, isCorrect);
+    if (navigator.vibrate) navigator.vibrate(10);
+    setAnsweredQuestions(prev => ({ ...prev, [currentQuestion.id]: option }));
   };
 
-  const toggleTag = (tag: 'bookmarked' | 'hard' | 'revise') => {
+  const toggleTag = (tag: keyof MCQ['tags']) => {
     if (!currentQuestion) return;
-    const batch = getBatchById(currentQuestion.batchId);
-    if (batch) {
-        const updatedQuestions = batch.questions.map(q => 
-            q.id === currentQuestion.id ? { ...q, tags: { ...q.tags, [tag]: !q.tags[tag] } } : q
-        );
-        updateBatch({ ...batch, questions: updatedQuestions });
-    }
+    updateQuestion(currentQuestion.batchId, currentQuestion.id, {
+      tags: { ...currentQuestion.tags, [tag]: !currentQuestion.tags[tag] },
+    });
   };
-  
+
   const goToNext = () => {
-    if (sessionState && currentQuestionIndex < sessionState.questions.length - 1) {
+    if (currentQuestionIndex < studyQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
-      endSession();
+      endStudySession();
     }
   };
 
-  const endSession = () => {
-    if (!sessionState) return;
-    const { questions, config } = sessionState;
-    const correctAnswers = questions.filter(q => selectedAnswers[q.id] === q.answer).length;
-    const score = questions.length > 0 ? Math.round((correctAnswers / questions.length) * 100) : 0;
-    
-    const sessionResult: StudySessionResult = {
-        id: uuidv4(),
-        createdAt: new Date().toISOString(),
-        score,
-        accuracy: `${correctAnswers}/${questions.length}`,
-        config,
-    };
-    addStudySession(sessionResult);
-    
-    sessionStorage.removeItem('studySession');
-    sessionStorage.removeItem('studySessionAnswers');
-    sessionStorage.removeItem('studySessionIndex');
-
-    setSessionEnded(true);
-  };
-  
-  const sessionStats = useMemo(() => {
-    if (!sessionEnded || !sessionState) return null;
-    const { questions } = sessionState;
-    const correctCount = questions.reduce((acc, q) => selectedAnswers[q.id] === q.answer ? acc + 1 : acc, 0);
-    const incorrectCount = questions.length - correctCount;
-    const score = Math.round((correctCount / questions.length) * 100);
-    return { correctCount, incorrectCount, score };
-  }, [sessionEnded, sessionState, selectedAnswers]);
-
-  if (sessionEnded) {
-    return (
-        <div className="animate-fade-in max-w-2xl mx-auto flex flex-col justify-center h-full">
-            <Card className="p-4 sm:p-8 text-center">
-                <CardHeader>
-                    <h1 className="text-3xl font-bold text-foreground">Session Complete!</h1>
-                    <p className="text-5xl font-bold gradient-text py-4">{sessionStats?.score}%</p>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex justify-around items-center my-4 p-6 bg-muted rounded-lg">
-                        <div className="text-center">
-                            <p className="text-3xl font-bold text-green-500">{sessionStats?.correctCount}</p>
-                            <p className="text-sm text-muted-foreground mt-1">Correct</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-3xl font-bold text-red-500">{sessionStats?.incorrectCount}</p>
-                            <p className="text-sm text-muted-foreground mt-1">Incorrect</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-3xl font-bold">{sessionState?.questions.length}</p>
-                            <p className="text-sm text-muted-foreground mt-1">Total</p>
-                        </div>
-                    </div>
-                </CardContent>
-                <CardFooter className="flex justify-center">
-                    <Button onClick={() => navigate('/bank')} size="lg" variant="gradient">
-                        Back to Dashboard
-                    </Button>
-                </CardFooter>
-            </Card>
-        </div>
-    );
-  }
-
-  if (!sessionState || !currentQuestion) {
+  if (!isStudying || !currentQuestion) {
     return (
       <div className="flex justify-center items-center h-full">
         <LoaderCircle className="animate-spin text-primary" size={48} />
@@ -162,16 +58,14 @@ const StudySession: React.FC = () => {
     );
   }
 
-  const batchForTags = getBatchById(currentQuestion.batchId);
-  const questionForTags = batchForTags?.questions.find(q => q.id === currentQuestion.id);
-  const progressPercentage = ((currentQuestionIndex + 1) / sessionState.questions.length) * 100;
+  const progressPercentage = ((currentQuestionIndex + 1) / studyQuestions.length) * 100;
 
   return (
     <div className="animate-fade-in max-w-4xl mx-auto">
       <div className="mb-4">
         <div className="flex justify-between items-center mb-2">
-            <p className="text-sm font-medium text-muted-foreground">Question {currentQuestionIndex + 1} of {sessionState.questions.length}</p>
-            <Button variant="link" size="sm" className="text-destructive" onClick={endSession}>End Session</Button>
+            <p className="text-sm font-medium text-muted-foreground">Question {currentQuestionIndex + 1} of {studyQuestions.length}</p>
+            <Button variant="link" size="sm" className="text-destructive" onClick={endStudySession}>End Session</Button>
         </div>
         <Progress value={progressPercentage} />
       </div>
@@ -199,9 +93,7 @@ const StudySession: React.FC = () => {
                 }
                 
                 return (
-                <Button key={i} onClick={() => handleSelectOption(option)} disabled={!!selectedOption} variant={variant} className={cn("w-full justify-start h-auto py-3 whitespace-normal text-base", {
-                    "border-primary ring-2 ring-primary": isSelected && !selectedOption, // Show selection before revealing answer
-                })}>
+                <Button key={i} onClick={() => handleSelectOption(option)} disabled={!!selectedOption} variant={variant} className={cn("w-full justify-start h-auto py-3 whitespace-normal text-base")}>
                     {icon}
                     <span className="font-mono text-sm mr-4 opacity-70">{String.fromCharCode(65 + i)}.</span>
                     <span className="text-left">{option}</span>
@@ -223,16 +115,13 @@ const StudySession: React.FC = () => {
         </CardContent>
         <CardFooter className="bg-muted/30 border-t px-6 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            {questionForTags && <>
-                <Button variant="ghost" onClick={() => toggleTag('bookmarked')} className={cn("btn-premium-label", questionForTags.tags.bookmarked && "underline !text-yellow-400")}>Bookmark</Button>
-                <Button variant="ghost" onClick={() => toggleTag('hard')} className={cn("btn-premium-label", questionForTags.tags.hard && "underline !text-red-500")}>Mark as Hard</Button>
-            </>}
-            <Button variant="ghost" className="btn-premium-label opacity-50" disabled>Notes</Button>
-            <Button variant="ghost" className="btn-premium-label opacity-50" disabled>Report Issue</Button>
+            <Button variant="ghost" onClick={() => toggleTag('bookmarked')} className={cn("btn-premium-label", currentQuestion.tags.bookmarked && "underline !text-yellow-400")}>Bookmark</Button>
+            <Button variant="ghost" onClick={() => toggleTag('hard')} className={cn("btn-premium-label", currentQuestion.tags.hard && "underline !text-red-500")}>Mark as Hard</Button>
+            <Button variant="ghost" onClick={() => toggleTag('revise')} className={cn("btn-premium-label", currentQuestion.tags.revise && "underline !text-blue-400")}>Revise</Button>
           </div>
           {selectedOption && (
             <Button onClick={goToNext} variant="gradient">
-              {currentQuestionIndex < sessionState.questions.length - 1 ? 'Next Question' : 'Finish Session'}
+              {currentQuestionIndex < studyQuestions.length - 1 ? 'Next Question' : 'Finish Session'}
             </Button>
           )}
         </CardFooter>

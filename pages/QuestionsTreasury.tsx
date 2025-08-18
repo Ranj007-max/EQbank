@@ -1,12 +1,26 @@
 import { Search, Download } from 'lucide-react';
+import { useMemo } from 'react';
 import { Input } from '../components/ui/input';
 import TreasuryFilterSidebar from '../components/TreasuryFilterSidebar';
 import TreasuryContent from '../components/TreasuryContent';
-import { useAnalytics } from '../context/AnalyticsContext';
+import { useBatches } from '../context/BatchContext';
 import { Button } from '../components/ui/button';
 
 const QuestionsTreasury: React.FC = () => {
-  const { overallStats, statsBySubject } = useAnalytics();
+  const { batches } = useBatches();
+
+  const statsBySubject = useMemo(() => {
+    const stats: { [key: string]: { name: string; total: number; attempted: number } } = {};
+    batches.forEach(batch => {
+      const key = batch.subject;
+      if (!stats[key]) stats[key] = { name: key, total: 0, attempted: 0 };
+      stats[key].total += batch.questions.length;
+      stats[key].attempted += batch.questions.filter(q => q.lastAttemptCorrect !== null).length;
+    });
+    return Object.values(stats).sort((a, b) => b.total - a.total);
+  }, [batches]);
+
+  const totalQuestions = useMemo(() => batches.reduce((acc, batch) => acc + batch.questions.length, 0), [batches]);
 
   const exportToCsv = () => {
     const headers = ['Subject', 'Total MCQs'];
@@ -57,7 +71,7 @@ const QuestionsTreasury: React.FC = () => {
       </div>
 
       <footer className="flex justify-between items-center text-muted-foreground text-sm">
-        <span>Total MCQs: {overallStats.totalQuestions} | Unique Subjects: {statsBySubject.length}</span>
+        <span>Total MCQs: {totalQuestions} | Unique Subjects: {statsBySubject.length}</span>
         <Button variant="outline" onClick={exportToCsv} className="neumorphic-button">
           <Download className="mr-2 h-4 w-4" />
           Export to CSV

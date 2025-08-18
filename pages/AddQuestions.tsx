@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-import { useAnalytics } from '../context/AnalyticsContext';
+import { useBatches } from '../context/BatchContext';
 import { MBBS_SUBJECTS, PLATFORMS } from '../data/constants';
 import { Batch, ParsedMCQ, MCQ } from '../types';
 import { ArrowLeft, LoaderCircle, CheckCircle, Wand, Edit, PlusCircle } from 'lucide-react';
@@ -15,7 +15,7 @@ import { cn } from '../lib/utils';
 
 const AddQuestions: React.FC = () => {
   const navigate = useNavigate();
-  const { addBatch } = useAnalytics();
+  const { addBatch } = useBatches();
 
   const [addMode, setAddMode] = useState<'ai' | 'manual'>('ai');
 
@@ -79,13 +79,11 @@ const AddQuestions: React.FC = () => {
     const questionsToSave = addMode === 'ai' ? parsedMCQs : manualMCQs;
     if (!questionsToSave || questionsToSave.length === 0) return;
 
-    const newBatch: Batch = {
-      id: uuidv4(),
+    const batchData: Omit<Batch, 'id' | 'createdAt'> = {
       name: `${subject} - ${chapter}`,
       subject,
       chapter,
       platform,
-      createdAt: new Date().toISOString(),
       questions: questionsToSave.map((mcq): MCQ => ({
         id: uuidv4(),
         ...mcq,
@@ -106,7 +104,7 @@ const AddQuestions: React.FC = () => {
       })),
     };
 
-    addBatch(newBatch);
+    addBatch(batchData);
     navigate('/bank');
   };
 

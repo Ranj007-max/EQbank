@@ -1,7 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAnalytics } from '../context/AnalyticsContext';
-import { CheckCircle, XCircle, BrainCircuit, SlidersHorizontal, ArrowRight } from 'lucide-react';
+import { useStudy } from '../context/StudyContext';
+import { useBatches } from '../context/BatchContext';
+import * as dataService from '../services/dataService';
+import { CheckCircle, XCircle, BrainCircuit, SlidersHorizontal, ArrowRight, LoaderCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import ReviewSessionSummary from '../components/ReviewSessionSummary';
 import { Card, CardContent, CardFooter, CardHeader } from '../components/ui/card';
@@ -23,14 +25,20 @@ interface ReviewSettings {
 
 const SrsReviewSession: React.FC = () => {
   const navigate = useNavigate();
-  const { dueReviewQuestions, getBatchById, updateBatch, recordAnswer, statsBySubject, tagStats, updateQuestionNotes } = useAnalytics();
-  
-  const [sessionStarted, setSessionStarted] = useState(false);
+  const { isSrsReviewActive, srsQuestions, startSrsSession, recordAnswer, endSrsSession } = useStudy();
+  const { updateQuestion, updateQuestionNotes } = useBatches();
+
+  // State for the setup screen
+  const [allDueQuestions, setAllDueQuestions] = useState<StudyQuestion[]>([]);
+  const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // State for the active session
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [sessionEnded, setSessionEnded] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [sessionQuestions, setSessionQuestions] = useState<StudyQuestion[]>([]);
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const [currentNotes, setCurrentNotes] = useState('');
   const [isFlipped, setIsFlipped] = useState(false);
@@ -41,30 +49,37 @@ const SrsReviewSession: React.FC = () => {
     tags: [],
   });
 
-  const availableSubjects = useMemo(() => statsBySubject.map(s => s.name), [statsBySubject]);
+  useEffect(() => {
+    const loadInitialData = async () => {
+      setIsLoading(true);
+      const [dueQuestions, subjectStats, tagStats] = await Promise.all([
+        dataService.getDueReviewQuestions(),
+        dataService.getStatsByGrouping('subject'),
+        dataService.getTagStats(),
+      ]);
+      setAllDueQuestions(dueQuestions);
+      setAvailableSubjects(subjectStats.map(s => s.name));
+      setAvailableTags((Object.keys(tagStats) as Tag[]).filter(tag => tagStats[tag] > 0));
+      setIsLoading(false);
+    };
+    if (!isSrsReviewActive) {
+      loadInitialData();
+    }
+  }, [isSrsReviewActive]);
 
-  const availableTags = useMemo((): Tag[] => {
-    return (Object.keys(tagStats) as Tag[]).filter(tag => tagStats[tag] > 0);
-  }, [tagStats]);
-
-  const questions = useMemo(() => {
-    let filteredQuestions = dueReviewQuestions || [];
+  const filteredQuestions = useMemo(() => {
+    let questions = allDueQuestions;
     if (reviewSettings.subjects.length > 0) {
       const subjectSet = new Set(reviewSettings.subjects);
-      filteredQuestions = filteredQuestions.filter(q => {
-        const batch = getBatchById(q.batchId);
-        return batch && subjectSet.has(batch.subject);
-      });
+      questions = questions.filter(q => subjectSet.has(q.subject));
     }
     if (reviewSettings.tags.length > 0) {
-      filteredQuestions = filteredQuestions.filter(q => {
-        return reviewSettings.tags.every(tag => q.tags[tag]);
-      });
+      questions = questions.filter(q => reviewSettings.tags.every(tag => q.tags[tag]));
     }
-    return filteredQuestions.slice(0, reviewSettings.questionLimit);
-  }, [dueReviewQuestions, reviewSettings, getBatchById]);
+    return questions.slice(0, reviewSettings.questionLimit);
+  }, [allDueQuestions, reviewSettings]);
 
-  const currentQuestion = sessionStarted ? sessionQuestions[currentQuestionIndex] : questions[currentQuestionIndex];
+  const currentQuestion = isSrsReviewActive ? srsQuestions[currentQuestionIndex] : undefined;
   const selectedOption = currentQuestion ? selectedAnswers[currentQuestion.id] : undefined;
   
   useEffect(() => {
@@ -74,70 +89,60 @@ const SrsReviewSession: React.FC = () => {
   }, [currentQuestion]);
 
   const handleSelectOption = (option: string) => {
-    if (selectedOption) return; 
+    if (selectedOption || !currentQuestion) return;
 
     setSelectedAnswers(prev => ({ ...prev, [currentQuestion.id]: option }));
     
     const isCorrect = option === currentQuestion.answer;
-    recordAnswer(currentQuestion.batchId, currentQuestion.id, isCorrect);
+    recordAnswer(currentQuestion.id, currentQuestion.batchId, isCorrect);
 
     setIsFlipped(true);
   };
 
   const handleStartSession = () => {
-    setSessionQuestions(questions);
-    setCurrentQuestionIndex(0);
-    setSelectedAnswers({});
-    setSessionEnded(false);
-    setSessionStarted(true);
-    setIsFlipped(false);
+    startSrsSession(filteredQuestions);
   };
 
   const handleRestart = () => {
     setCurrentQuestionIndex(0);
     setSelectedAnswers({});
     setSessionEnded(false);
-    setSessionStarted(true);
     setIsFlipped(false);
   };
 
   const toggleTag = (tag: 'bookmarked' | 'hard') => {
     if(!currentQuestion) return;
-    const batch = getBatchById(currentQuestion.batchId);
-    if (batch) {
-      const updatedQuestions = batch.questions.map(q => 
-        q.id === currentQuestion.id ? { ...q, tags: { ...q.tags, [tag]: !q.tags[tag] } } : q
-      );
-      updateBatch({ ...batch, questions: updatedQuestions });
-    }
+    updateQuestion(currentQuestion.batchId, currentQuestion.id, {
+      tags: { ...currentQuestion.tags, [tag]: !currentQuestion.tags[tag] },
+    });
   };
   
   const goToNext = () => {
     setIsFlipped(false);
     setTimeout(() => {
-        if (currentQuestionIndex < sessionQuestions.length - 1) {
+        if (currentQuestionIndex < srsQuestions.length - 1) {
             setCurrentQuestionIndex(prev => prev + 1);
         } else {
             setSessionEnded(true);
         }
-    }, 300); // Wait for flip back animation
+    }, 300);
   };
 
-  if (!sessionStarted) {
+  if (!isSrsReviewActive) {
     return (
       <div className="animate-fade-in max-w-2xl mx-auto flex flex-col justify-center h-full">
         <Card className="glass-card p-8 sm:p-12 text-center">
             <BrainCircuit size={56} className="mx-auto text-primary mb-6" />
             <h1 className="text-4xl font-extrabold tracking-tight gradient-text mb-4">Spaced Repetition Review</h1>
-            {dueReviewQuestions.length > 0 ? (
+            {isLoading ? <p>Loading...</p> : allDueQuestions.length > 0 ? (
             <>
                 <p className="text-muted-foreground mb-8 text-lg">
-                  You have <span className="font-bold text-primary text-xl">{dueReviewQuestions.length}</span> questions due for review.
-                  { (questions.length < dueReviewQuestions.length) && ` Your settings have filtered this down to ${questions.length}.` }
+                  You have <span className="font-bold text-primary text-xl">{allDueQuestions.length}</span> questions due for review.
+                  {(filteredQuestions.length < allDueQuestions.length) && ` Your settings have filtered this down to ${filteredQuestions.length}.`}
                 </p>
                 <div className="flex gap-2 justify-center">
-                    <Button onClick={handleStartSession} size="lg" className="btn-gradient rounded-full" disabled={questions.length === 0}>
-                        {`Start Review (${questions.length})`} <ArrowRight className="ml-2" size={20} />
+                    <Button onClick={handleStartSession} size="lg" className="btn-gradient rounded-full" disabled={filteredQuestions.length === 0}>
+                        {`Start Review (${filteredQuestions.length})`} <ArrowRight className="ml-2" size={20} />
                     </Button>
                     <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
                         <DialogTrigger asChild>
@@ -177,7 +182,7 @@ const SrsReviewSession: React.FC = () => {
   }
 
   if (sessionEnded) {
-    return <ReviewSessionSummary sessionQuestions={sessionQuestions} answers={selectedAnswers} onRestart={handleRestart} onExit={() => navigate('/')} />;
+    return <ReviewSessionSummary sessionQuestions={srsQuestions} answers={selectedAnswers} onRestart={handleRestart} onExit={endSrsSession} />;
   }
 
   if (!currentQuestion) {
@@ -188,9 +193,8 @@ const SrsReviewSession: React.FC = () => {
     )
   }
 
-  const batchForTags = getBatchById(currentQuestion.batchId);
-  const questionForTags = batchForTags?.questions.find(q => q.id === currentQuestion.id);
-  const progressPercentage = ((currentQuestionIndex + 1) / sessionQuestions.length) * 100;
+  const progressPercentage = ((currentQuestionIndex + 1) / srsQuestions.length) * 100;
+  const questionForTags = srsQuestions[currentQuestionIndex];
 
   return (
     <div className="animate-fade-in max-w-4xl mx-auto">
@@ -215,8 +219,8 @@ const SrsReviewSession: React.FC = () => {
         `}</style>
        <div className="mb-4">
         <div className="flex justify-between items-center mb-2">
-            <p className="text-sm font-medium text-muted-foreground">Reviewing Question {currentQuestionIndex + 1} of {sessionQuestions.length}</p>
-            <p className="text-sm font-medium text-muted-foreground">{getBatchById(currentQuestion.batchId)?.subject}</p>
+            <p className="text-sm font-medium text-muted-foreground">Reviewing Question {currentQuestionIndex + 1} of {srsQuestions.length}</p>
+            <p className="text-sm font-medium text-muted-foreground">{currentQuestion.subject}</p>
         </div>
         <Progress value={progressPercentage} className="h-2 [&>*]:bg-gradient-to-r from-secondary to-primary" />
       </div>
@@ -298,25 +302,22 @@ const SrsReviewSession: React.FC = () => {
                     </CardContent>
                     <CardFooter className="bg-muted/30 border-t px-6 py-3 flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                        {questionForTags && <>
                             <Button variant="ghost" onClick={() => toggleTag('bookmarked')} className={cn("btn-premium-label", questionForTags.tags.bookmarked && "underline !text-yellow-400")}>Bookmark</Button>
                             <Button variant="ghost" onClick={() => toggleTag('hard')} className={cn("btn-premium-label", questionForTags.tags.hard && "underline !text-red-500")}>Mark as Hard</Button>
-                        </>}
-                        <Dialog open={isNotesModalOpen} onOpenChange={setIsNotesModalOpen}>
-                            <DialogTrigger asChild>
-                                <Button variant="ghost" className="btn-premium-label">Notes</Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                            <DialogHeader><DialogTitle>Notes for this Question</DialogTitle></DialogHeader>
-                            <Textarea value={currentNotes} onChange={(e) => setCurrentNotes(e.target.value)} rows={8} placeholder="Write your notes here..." />
-                            <Button onClick={() => { if(currentQuestion) { updateQuestionNotes(currentQuestion.batchId, currentQuestion.id, currentNotes); } setIsNotesModalOpen(false); }}>Save Notes</Button>
-                            </DialogContent>
-                        </Dialog>
-                        <Button variant="ghost" className="btn-premium-label opacity-50" disabled>Report Issue</Button>
+                            <Dialog open={isNotesModalOpen} onOpenChange={setIsNotesModalOpen}>
+                                <DialogTrigger asChild>
+                                    <Button variant="ghost" className="btn-premium-label">Notes</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                <DialogHeader><DialogTitle>Notes for this Question</DialogTitle></DialogHeader>
+                                <Textarea value={currentNotes} onChange={(e) => setCurrentNotes(e.target.value)} rows={8} placeholder="Write your notes here..." />
+                                <Button onClick={() => { if(currentQuestion) { updateQuestionNotes(currentQuestion.batchId, currentQuestion.id, currentNotes); } setIsNotesModalOpen(false); }}>Save Notes</Button>
+                                </DialogContent>
+                            </Dialog>
                         </div>
                         {selectedOption && (
                         <Button onClick={goToNext} className="btn-gradient rounded-full">
-                            {currentQuestionIndex < sessionQuestions.length - 1 ? 'Next Question' : 'Finish Review'} <ArrowRight className="ml-2" size={20} />
+                            {currentQuestionIndex < srsQuestions.length - 1 ? 'Next Question' : 'Finish Review'} <ArrowRight className="ml-2" size={20} />
                         </Button>
                         )}
                     </CardFooter>

@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAnalytics } from '../context/AnalyticsContext';
+import { useBatches } from '../context/BatchContext';
+import { useExam } from '../context/ExamContext';
 import { ExamQuestion } from '../types';
 import { ExamHistoryTable } from '../components/ExamHistoryTable';
 import CreateExamPanel from '../components/CreateExamPanel';
@@ -19,8 +19,8 @@ export interface ExamConfig {
 }
 
 const ExamSetup: React.FC = () => {
-  const navigate = useNavigate();
-  const { batches } = useAnalytics();
+  const { batches } = useBatches();
+  const { startExam: startExamFromContext } = useExam();
   const [presets, setPresets] = useLocalStorage<ExamConfig[]>('examPresets', []);
 
   const [config, setConfig] = useState<ExamConfig>({
@@ -79,7 +79,16 @@ const ExamSetup: React.FC = () => {
       .slice(0, config.numQuestions);
       
     if (sessionQuestions.length > 0) {
-      navigate('/exam/session', { state: { questions: sessionQuestions, config } });
+      startExamFromContext(
+        {
+          questionCount: config.numQuestions,
+          durationMinutes: config.numQuestions, // Defaulting to 1 min per question
+          subjects: config.subjects,
+          platforms: [config.platform],
+          statuses: [],
+        },
+        sessionQuestions
+      );
     } else {
       alert("No questions match your criteria.");
     }

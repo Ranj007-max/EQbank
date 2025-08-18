@@ -4,6 +4,9 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 import { AnalyticsProvider } from './context/AnalyticsContext';
+import { BatchProvider } from './context/BatchContext';
+import { ExamProvider } from './context/ExamContext';
+import { StudyProvider } from './context/StudyContext';
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -25,7 +28,13 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <AnalyticsProvider>
-        <App />
+        <BatchProvider>
+          <ExamProvider>
+            <StudyProvider>
+              <App />
+            </StudyProvider>
+          </ExamProvider>
+        </BatchProvider>
       </AnalyticsProvider>
     </BrowserRouter>
   </React.StrictMode>
