@@ -1,14 +1,20 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { ChevronDown, History } from 'lucide-react';
 import { cn } from '../lib/utils';
 
-export const ExamHistoryTable: React.FC = () => {
+interface ExamHistoryTableProps {
+  limit?: number;
+}
+
+export const ExamHistoryTable: React.FC<ExamHistoryTableProps> = ({ limit }) => {
   const { examHistory } = useAnalytics();
   const [isOpen, setIsOpen] = useState(true);
+
+  const displayedHistory = limit ? examHistory.slice(0, limit) : examHistory;
 
   if (examHistory.length === 0) {
     return (
@@ -63,7 +69,7 @@ export const ExamHistoryTable: React.FC = () => {
               </div>
               {/* Body */}
               <div className="divide-y divide-border/20">
-                {examHistory.map(exam => (
+                {displayedHistory.map(exam => (
                   <Link
                     key={exam.id}
                     to={`/exam/results/${exam.id}`}
@@ -80,6 +86,13 @@ export const ExamHistoryTable: React.FC = () => {
             </div>
           </div>
         </CardContent>
+      )}
+       {isOpen && limit && examHistory.length > limit && (
+        <CardFooter className="justify-center border-t pt-4">
+            <Button variant="link" asChild>
+                <Link to="/review/history">View All History</Link>
+            </Button>
+        </CardFooter>
       )}
     </Card>
   );
