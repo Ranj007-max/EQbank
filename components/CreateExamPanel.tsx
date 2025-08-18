@@ -30,6 +30,7 @@ const CreateExamPanel: React.FC<CreateExamPanelProps> = ({
   startExam,
   availableQuestions,
   savePreset,
+  filteredQuestions,
 }) => {
   const [isPreviewModalOpen, setPreviewModalOpen] = useState(false);
 
@@ -213,7 +214,7 @@ const CreateExamPanel: React.FC<CreateExamPanelProps> = ({
       <PreviewQuestionsModal
         isOpen={isPreviewModalOpen}
         onClose={() => setPreviewModalOpen(false)}
-        questions={filteredQuestions.slice(0, 10).map(q => ({ id: q.id, text: q.question }))}
+        questions={filteredQuestions.slice(0, 10).map((q: ExamQuestion) => ({ id: q.id, text: q.question }))}
       />
     </>
   );
