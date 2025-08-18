@@ -60,9 +60,10 @@ const ExamResults: React.FC = () => {
         </p>
       </div>
 
-      <Card className="glass-card p-6">
-        <div className="flex flex-col md:flex-row items-center justify-around gap-8">
-          <div className="relative">
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row items-center justify-around gap-8">
+            <div className="relative">
             <ProgressRing progress={animatedScore} size={160} strokeWidth={12} />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-4xl font-bold">{animatedScore}</span>
@@ -88,6 +89,7 @@ const ExamResults: React.FC = () => {
             </div>
           </div>
         </div>
+        </CardContent>
       </Card>
       
       <div>

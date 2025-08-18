@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { useAnalytics } from '../context/AnalyticsContext';
-import type { ExamQuestion, ExamSession } from '../types';
+import type { ExamQuestion, ExamSession, MCQ } from '../types';
 import { ChevronLeft, ChevronRight, LoaderCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { cn } from '../lib/utils';
+import { Card, CardContent, CardFooter } from '../components/ui/card';
 import { useSound } from '../hooks/useSound';
 import Confetti from '../components/Confetti';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -25,7 +25,7 @@ interface SessionState {
 const ExamSession: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { addExamSession, recordMultipleAnswers } = useAnalytics();
+  const { addExamSession, recordMultipleAnswers, getBatchById, updateBatch } = useAnalytics();
   
   const [sessionState, setSessionState] = useState<SessionState | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -52,6 +52,17 @@ const ExamSession: React.FC = () => {
       }
     }
   });
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   useEffect(() => {
     if (sessionState && !isPaused) {
@@ -207,24 +218,38 @@ const ExamSession: React.FC = () => {
 
   const isLastQuestion = currentIndex === sessionState.questions.length - 1;
 
+  const toggleTag = (mcqId: string, batchId: string, tag: keyof MCQ['tags']) => {
+    const batch = getBatchById(batchId);
+    if (batch) {
+      const updatedQuestions = batch.questions.map(q => {
+        if (q.id === mcqId) {
+          return { ...q, tags: { ...q.tags, [tag]: !q.tags?.[tag] } };
+        }
+        return q;
+      });
+      updateBatch({ ...batch, questions: updatedQuestions });
+    }
+  };
+
+  const currentQuestionFromBatch = getBatchById(currentQuestion.batchId)?.questions.find(q => q.id === currentQuestion.id);
+
   return (
-    <div className="flex flex-col h-screen text-white" style={{ background: '#0A0A0A', fontFamily: 'SF Pro Display, sans-serif' }}>
+    <div className="flex flex-col h-screen bg-background text-foreground">
       {feedback === 'correct' && <Confetti />}
 
       {/* Top Bar */}
-      <header className="absolute top-0 left-0 right-0 h-16 bg-black bg-opacity-30 backdrop-blur-sm z-10 flex items-center justify-between px-6">
+      <header className="h-16 border-b bg-card text-card-foreground flex items-center justify-between px-6 z-10">
         <div className="flex items-center gap-4">
-          <span className="font-bold text-lg" style={{color: '#00A8FF'}}>
+          <span className="font-bold text-lg text-primary">
             {`Q ${currentIndex + 1}/${sessionState.questions.length}`}
           </span>
         </div>
         <div className="flex-1 mx-8">
-          <div className="w-full bg-gray-700 rounded-full h-2.5">
+          <div className="w-full bg-muted rounded-full h-2.5">
             <div
-              className="h-2.5 rounded-full"
+              className="bg-primary h-2.5 rounded-full"
               style={{
                 width: `${(timeRemaining / (sessionState.config.questionCount * 60)) * 100}%`,
-                backgroundColor: '#00A8FF',
                 transition: 'width 0.5s linear'
               }}
             ></div>
@@ -237,74 +262,83 @@ const ExamSession: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main {...bind()} className="flex-1 flex items-center justify-center overflow-y-auto p-4 sm:p-6 pt-20 pb-20 touch-none">
-        <div key={currentIndex} className="animate-question-change w-full max-w-lg md:max-w-2xl lg:max-w-4xl">
-          <div
-            className="glass-card"
-            style={{
-              backgroundColor: 'rgba(10, 10, 10, 0.8)',
-              borderRadius: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.1)'
-            }}
-          >
-            <div className="p-6 md:p-8">
-              <p className="text-xl md:text-2xl font-bold leading-relaxed" style={{fontFamily: 'SF Pro Display, sans-serif'}}>
-                {currentQuestion.question}
-              </p>
-            </div>
-            <div className="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {currentQuestion.options.map((option, i) => {
-                const isSelected = sessionState.answers[currentQuestion.id] === option;
-                return (
-                  <button
-                    key={i}
-                    className={cn(
-                      "neumorphic-button h-16 text-left p-4 text-lg transition-all duration-200",
-                      isSelected && "bg-blue-500 text-white shadow-none"
-                    )}
-                    style={{
-                      backgroundColor: isSelected ? '#00A8FF' : '#2A2A2A'
-                    }}
-                    onClick={() => handleSelectAnswer(option)}
-                    disabled={isAnswered}
-                  >
-                    <span className="font-mono mr-4 opacity-70">{String.fromCharCode(65 + i)}.</span>
-                    {option}
-                  </button>
-                )
-              })}
-            </div>
+      <div className="flex flex-1 overflow-hidden">
+        <main {...bind()} className="flex-1 flex items-center justify-center overflow-y-auto p-4 sm:p-6 touch-none">
+          <div key={currentIndex} className="animate-question-change w-full max-w-4xl">
+            <Card>
+              <CardContent className="p-6 md:p-8">
+                <p className="text-xl md:text-2xl font-bold leading-relaxed">
+                  {currentQuestion.question}
+                </p>
+              </CardContent>
+              <CardFooter className="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, i) => {
+                  const isSelected = sessionState.answers[currentQuestion.id] === option;
+                  return (
+                    <Button
+                      key={i}
+                      variant={isSelected ? 'default' : 'outline'}
+                      className="h-16 text-left p-4 text-lg justify-start"
+                      onClick={() => handleSelectAnswer(option)}
+                      disabled={isAnswered}
+                    >
+                      <span className="font-mono mr-4 opacity-70">{String.fromCharCode(65 + i)}.</span>
+                      {option}
+                    </Button>
+                  )
+                })}
+              </CardFooter>
+            </Card>
           </div>
-        </div>
-      </main>
+        </main>
+        {/* Right Panel */}
+        <aside className="w-80 border-l bg-card text-card-foreground p-4 overflow-y-auto">
+          <h3 className="font-bold text-lg mb-4">Questions Grid</h3>
+          <div className="grid grid-cols-5 gap-2">
+            {sessionState.questions.map((q, index) => (
+              <Button
+                key={q.id}
+                variant={
+                  currentIndex === index
+                    ? 'default'
+                    : sessionState.answers[q.id]
+                    ? 'secondary'
+                    : 'outline'
+                }
+                className={`h-12 w-12 ${sessionState.markedForReview.includes(q.id) ? 'ring-2 ring-yellow-500' : ''}`}
+                onClick={() => changeQuestion(index)}
+              >
+                {index + 1}
+              </Button>
+            ))}
+          </div>
+        </aside>
+      </div>
 
       {/* Bottom Bar */}
-      {/* Bottom Bar */}
-      <footer className="absolute bottom-0 left-0 right-0 h-16 bg-black bg-opacity-30 backdrop-blur-sm z-10 flex items-center justify-between px-6">
-        <Button
-          variant="outline"
-          onClick={() => {
-            const isMarked = sessionState.markedForReview.includes(currentQuestion.id);
-            const newMarked = isMarked
-              ? sessionState.markedForReview.filter(id => id !== currentQuestion.id)
-              : [...sessionState.markedForReview, currentQuestion.id];
-            setSessionState(prev => prev ? { ...prev, markedForReview: newMarked } : null);
-          }}
-          style={{ color: sessionState.markedForReview.includes(currentQuestion.id) ? '#00A8FF' : 'white' }}
-        >
-          Flag Question
-        </Button>
+      <footer className="h-16 border-t bg-card text-card-foreground flex items-center justify-between px-6">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost">Report</Button>
+          <Button variant="ghost" onClick={() => toggleTag(currentQuestion.id, currentQuestion.batchId, 'revise')}>Revise</Button>
+          <Button variant="ghost" onClick={() => toggleTag(currentQuestion.id, currentQuestion.batchId, 'hard')}>Hard</Button>
+          <Button
+            variant={currentQuestionFromBatch?.tags?.bookmarked ? 'default' : 'ghost'}
+            onClick={() => toggleTag(currentQuestion.id, currentQuestion.batchId, 'bookmarked')}
+          >
+            Bookmark
+          </Button>
+        </div>
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={() => changeQuestion(currentIndex - 1)} disabled={currentIndex === 0}>
-            <ChevronLeft size={20} />
+            <ChevronLeft size={20} className="mr-2" />
             Prev
           </Button>
           <Button onClick={() => changeQuestion(currentIndex + 1)} disabled={isLastQuestion}>
             Next
-            <ChevronRight size={20} />
+            <ChevronRight size={20} className="ml-2" />
           </Button>
         </div>
-        <Button variant="outline" onClick={() => setIsQuickReviewOpen(true)}>Quick Review</Button>
+        <Button variant="outline" onClick={() => setIsQuickReviewOpen(true)}>Review</Button>
       </footer>
 
       <ConfirmationModal

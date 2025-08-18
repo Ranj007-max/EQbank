@@ -21,6 +21,7 @@ interface MultiSelectProps {
   onChange: (selected: string[]) => void;
   className?: string;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(

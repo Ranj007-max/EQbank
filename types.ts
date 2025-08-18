@@ -61,6 +61,7 @@ export interface StudyQuestion extends MCQ {
 export interface ExamQuestion extends MCQ {
   batchId: string;
   subject: string;
+  chapter: string;
   platform: string;
 }
 
