@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import Layout from './components/Layout';
 import BankDashboard from './pages/BankDashboard';
+import QuestionsTreasury from './pages/QuestionsTreasury';
 import AddQuestions from './pages/AddQuestions';
 import BatchReview from './pages/BatchReview';
 import StudySession from './pages/StudySession';
@@ -18,6 +19,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/bank" element={<BankDashboard />} />
+        <Route path="/bank/treasury" element={<QuestionsTreasury />} />
         <Route path="/bank/add" element={<AddQuestions />} />
         <Route path="/bank/batch/:batchId" element={<BatchReview />} />
         <Route path="/study" element={<StudySession />} />

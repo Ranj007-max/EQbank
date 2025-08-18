@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
-import { PlusCircle, Zap, Download, Upload, Search } from 'lucide-react';
+import { PlusCircle, Zap, Download, Upload, Search, Book } from 'lucide-react';
 import StudyPanel from '../components/StudyPanel';
 import { QuestionTreasuryWidget } from '../components/QuestionTreasuryWidget';
 import { Button } from '../components/ui/button';
@@ -107,24 +107,41 @@ const BankDashboard: React.FC = () => {
               Your structured library for all questions. Filter, sort, and review with precision.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-4 mt-2">
-            <Button variant="outline" className="glass-card" onClick={handleImportClick}>
-              <Upload size={18} className="mr-2" />
-              Import
-            </Button>
-            <Button variant="outline" className="glass-card" onClick={exportData}>
-              <Download size={18} className="mr-2" />
-              Export
-            </Button>
-            <Button variant="outline" asChild className="glass-card">
-              <Link to="/bank/add">
-                <PlusCircle size={18} className="mr-2" />
-                Add Questions
-              </Link>
-            </Button>
-            <Button onClick={() => setIsPanelOpen(true)} className="btn-gradient rounded-full">
-              <Zap size={18} className="mr-2" />
-              Start Study Session
+          <div className="flex flex-col items-start gap-4 mt-2">
+            <div className="flex flex-wrap items-center gap-4">
+                <Button variant="outline" className="glass-card" onClick={handleImportClick}>
+                  <Upload size={18} className="mr-2" />
+                  Import
+                </Button>
+                <Button variant="outline" className="glass-card" onClick={exportData}>
+                  <Download size={18} className="mr-2" />
+                  Export
+                </Button>
+                <Button variant="outline" asChild className="glass-card">
+                  <Link to="/bank/add">
+                    <PlusCircle size={18} className="mr-2" />
+                    Add Questions
+                  </Link>
+                </Button>
+                <Button onClick={() => setIsPanelOpen(true)} className="btn-gradient rounded-full">
+                  <Zap size={18} className="mr-2" />
+                  Start Study Session
+                </Button>
+            </div>
+            <Button
+                asChild
+                className="w-[200px] rounded-[24px] text-lg font-bold neumorphic-button mt-4"
+                style={{ fontFamily: '"SF Pro Display", sans-serif' }}
+                onClick={() => {
+                    if (navigator.vibrate) {
+                        navigator.vibrate([10]);
+                    }
+                }}
+            >
+                <Link to="/bank/treasury">
+                    <Book size={24} className="mr-2" />
+                    Enter Treasury
+                </Link>
             </Button>
           </div>
         </div>
