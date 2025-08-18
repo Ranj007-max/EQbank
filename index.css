@@ -1,12 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
  
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 210 17% 98%; /* #F9FAFB */
     --foreground: 222 47% 11%;
     
     --card: 0 0% 100%;
@@ -14,49 +12,55 @@
     
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    
-    --primary: 251 93% 60%;
-    --primary-foreground: 0 0% 98%;
 
-    --secondary: 195 94% 47%;
+    /* New colors from spec */
+    --primary: 221 91% 60%; /* #3B82F6 - Indigo */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 174 100% 37%; /* #00BFA6 - Teal */
     --secondary-foreground: 222 47% 11%;
+    --accent: 258 90% 66%; /* #8B5CF6 - Violet */
+    --accent-foreground: 0 0% 98%;
     
     --muted: 0 0% 96.1%;
     --muted-foreground: 215 20% 65%;
-
-    --accent: 326 100% 59%;
-    --accent-foreground: 0 0% 98%;
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     
     --border: 0 0% 90%;
     --input: 0 0% 92%;
-    --ring: 251 93% 60%;
+    --ring: 221 91% 60%;
     
     --radius: 1rem;
   }
  
   .dark {
-    --background: 222 84% 4%;
+    --background: 240 3% 11%; /* #1C1C1E */
     --foreground: 210 40% 98%;
+
     --card: 216 34% 17%;
     --card-foreground: 210 40% 98%;
+
     --popover: 222 84% 4%;
     --popover-foreground: 210 40% 98%;
-    --primary: 262 88% 66%;
+
+    /* New colors from spec */
+    --primary: 221 91% 60%; /* #3B82F6 - Indigo */
     --primary-foreground: 210 40% 98%;
-    --secondary: 188 94% 47%;
+    --secondary: 174 100% 37%; /* #00BFA6 - Teal */
     --secondary-foreground: 222 84% 4%;
+    --accent: 258 90% 66%; /* #8B5CF6 - Violet */
+    --accent-foreground: 210 40% 98%;
+
     --muted: 216 34% 17%;
     --muted-foreground: 215 20% 65%;
-    --accent: 326 100% 59%;
-    --accent-foreground: 210 40% 98%;
+
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
+
     --border: 216 34% 17%;
     --input: 216 34% 17%;
-    --ring: 262 88% 66%;
+    --ring: 221 91% 60%;
   }
 }
  
@@ -94,7 +98,7 @@
   }
 
   .btn-gradient {
-    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)));
+    background: linear-gradient(90deg, hsl(var(--secondary)), hsl(var(--primary)));
     color: hsl(var(--primary-foreground));
     transition: all 0.3s ease;
     border: 1px solid transparent;
@@ -151,7 +155,7 @@
 @keyframes slide-in-fade {
   from {
     opacity: 0;
-    transform: translateX(15px);
+    transform: translateX(10px);
   }
   to {
     opacity: 1;

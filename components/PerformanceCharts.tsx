@@ -63,8 +63,8 @@ export const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ timeData, 
                 <p>Complete a few sessions to see your performance analytics.</p>
             </div>
         ) : (
-            <div className="grid grid-cols-1 gap-8" style={{ height: '350px' }}>
-            <div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="h-80">
                 <h4 className="font-semibold text-center text-muted-foreground mb-2">Performance Over Time</h4>
                 <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={timeData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
@@ -77,7 +77,7 @@ export const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ timeData, 
                 </LineChart>
                 </ResponsiveContainer>
             </div>
-            <div>
+            <div className="h-80">
                 <h4 className="font-semibold text-center text-muted-foreground mb-2">Performance By Subject</h4>
                 <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={subjectData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
