@@ -42,7 +42,7 @@ const ExamSession: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   const playCorrectSound = useSound('/sounds/correct-ding.mp3');
 
-  const bind = useDrag(({-
+  const bind = useDrag(({
     down,
     movement: [mx],
     direction: [xDir],
