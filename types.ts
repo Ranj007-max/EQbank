@@ -9,6 +9,7 @@ export interface MCQ {
     hard: boolean;
     revise: boolean;
   };
+  notes?: string;
   lastAttemptCorrect: boolean | null; // null: unattempted, true: correct, false: incorrect
   srsLevel: number;
   nextReviewDate: string; // ISO string
@@ -94,3 +95,5 @@ export interface UserGoal {
   type: 'weeklyQuestions';
   target: number;
 }
+
+export type Tag = 'bookmarked' | 'hard' | 'revise' | 'mistaked';
