@@ -3,32 +3,8 @@ import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { X } from 'lucide-react';
-import { MultiSelect } from './ui/MultiSelect';
-import { MBBS_SUBJECTS, PLATFORMS } from '../data/constants';
 
-export interface TreasuryFilters {
-  platforms: string[];
-  subjects: string[];
-  chapters: string[];
-  tags: string[];
-  searchTerm: string;
-}
-
-interface TreasuryFilterSidebarProps {
-  filters: TreasuryFilters;
-  onFiltersChange: (filters: Partial<TreasuryFilters>) => void;
-  onApply: () => void;
-  onReset: () => void;
-  availableChapters: { value: string; label: string }[];
-}
-
-const TreasuryFilterSidebar: React.FC<TreasuryFilterSidebarProps> = ({
-  filters,
-  onFiltersChange,
-  onApply,
-  onReset,
-  availableChapters,
-}) => {
+const TreasuryFilterSidebar = () => {
   return (
     <div className="glass-card p-6 space-y-6">
       <h2 className="text-2xl font-bold">Filters</h2>
@@ -36,58 +12,65 @@ const TreasuryFilterSidebar: React.FC<TreasuryFilterSidebarProps> = ({
       {/* Platform Filter */}
       <div className="space-y-2">
         <Label htmlFor="platform-filter">Platform</Label>
-        <MultiSelect
-          options={PLATFORMS.map(p => ({ value: p, label: p }))}
-          selected={filters.platforms}
-          onChange={(selected) => onFiltersChange({ platforms: selected })}
-          className="w-full"
-          placeholder="Select Platforms"
-          aria-label="Select Platforms"
-        />
+        <Select>
+          <SelectTrigger id="platform-filter" className="neumorphic-input">
+            <SelectValue placeholder="Select Platform" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="neet-pg">NEET PG</SelectItem>
+            <SelectItem value="aiims">AIIMS</SelectItem>
+            <SelectItem value="custom">Custom</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Subject Filter */}
       <div className="space-y-2">
         <Label htmlFor="subject-filter">Subject</Label>
-        <MultiSelect
-          options={MBBS_SUBJECTS.map(s => ({ value: s, label: s }))}
-          selected={filters.subjects}
-          onChange={(selected) => onFiltersChange({ subjects: selected })}
-          className="w-full"
-          placeholder="Select Subjects"
-          aria-label="Select Subjects"
-        />
+        {/* Replace with a multi-select component */}
+        <Select>
+          <SelectTrigger id="subject-filter" className="neumorphic-input">
+            <SelectValue placeholder="Select Subject" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="anatomy">Anatomy</SelectItem>
+            <SelectItem value="physiology">Physiology</SelectItem>
+            <SelectItem value="biochemistry">Biochemistry</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Chapter Filter */}
       <div className="space-y-2">
         <Label htmlFor="chapter-filter">Chapter</Label>
-        <MultiSelect
-          options={availableChapters}
-          selected={filters.chapters}
-          onChange={(selected) => onFiltersChange({ chapters: selected })}
-          className="w-full"
-          placeholder="Select Chapters"
-          aria-label="Select Chapters"
-          disabled={availableChapters.length === 0}
-        />
+        <Select>
+          <SelectTrigger id="chapter-filter" className="neumorphic-input">
+            <SelectValue placeholder="Select Chapter" />
+          </SelectTrigger>
+          <SelectContent>
+            {/* Chapters would be populated based on selected subject */}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Tags Filter */}
       <div className="space-y-2">
         <Label htmlFor="tags-filter">Tags</Label>
-        <Input
-          id="tags-filter"
-          placeholder="e.g. High-Yield, Image-Based"
-          className="neumorphic-input"
-          value={filters.tags.join(', ')}
-          onChange={(e) => onFiltersChange({ tags: e.target.value.split(',').map(t => t.trim()) })}
-        />
+        <div className="flex gap-2 items-center">
+            <Input id="tags-filter" placeholder="e.g. High-Yield, Image-Based" className="neumorphic-input" />
+        </div>
+        <div className="flex flex-wrap gap-2 mt-2">
+            {/* Selected tags would be displayed here as chips */}
+            <div className="flex items-center gap-1 bg-primary/20 text-primary text-sm font-semibold px-2 py-1 rounded-full">
+                <span>High-Yield</span>
+                <Button variant="ghost" size="icon" className="h-5 w-5"><X size={12}/></Button>
+            </div>
+        </div>
       </div>
 
       <div className="flex justify-between pt-4 border-t border-white/10">
-        <Button variant="outline" className="neumorphic-button" onClick={onReset}>Reset Filters</Button>
-        <Button className="btn-gradient" onClick={onApply}>Apply</Button>
+        <Button variant="outline" className="neumorphic-button">Reset Filters</Button>
+        <Button className="btn-gradient">Apply</Button>
       </div>
     </div>
   );
