@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Timer as TimerIcon } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 interface TimerProps {
   initialSeconds: number;
   onTimeUp: () => void;
   isPaused: boolean;
+  className?: string;
 }
 
-const Timer: React.FC<TimerProps> = ({ initialSeconds, onTimeUp, isPaused }) => {
+const Timer: React.FC<TimerProps> = ({ initialSeconds, onTimeUp, isPaused, className }) => {
   const [seconds, setSeconds] = useState(initialSeconds);
 
   useEffect(() => {
@@ -32,8 +34,8 @@ const Timer: React.FC<TimerProps> = ({ initialSeconds, onTimeUp, isPaused }) => 
   };
 
   return (
-    <div className="flex items-center gap-2 font-mono text-lg font-semibold bg-muted text-muted-foreground px-3 py-1 rounded-md">
-      <TimerIcon size={18} />
+    <div className={cn("flex items-center gap-1 font-mono", className)}>
+      <TimerIcon size={16} className="mr-1" />
       <span>{formatTime()}</span>
     </div>
   );
