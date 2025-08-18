@@ -43,8 +43,8 @@ const SrsReviewSession: React.FC = () => {
   const availableSubjects = useMemo(() => statsBySubject.map(s => s.name), [statsBySubject]);
 
   const availableTags = useMemo((): Tag[] => {
-    const tags: Tag[] = ['bookmarked', 'hard', 'revise', 'mistaked'];
-    return tags.filter(tag => tagStats[tag] > 0);
+    const validTags: Tag[] = ['bookmarked', 'hard', 'revise', 'mistaked'];
+    return validTags.filter(tag => tagStats[tag] > 0);
   }, [tagStats]);
 
   const questions = useMemo(() => {

@@ -3,7 +3,6 @@ import { StudyQuestion } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 
-// Forcing a change to see if build error persists
 interface ReviewSessionSummaryProps {
   sessionQuestions: StudyQuestion[];
   answers: Record<string, string>;
