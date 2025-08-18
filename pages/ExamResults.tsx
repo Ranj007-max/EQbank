@@ -88,6 +88,7 @@ const ExamResults: React.FC = () => {
               <p className="text-sm font-medium text-muted-foreground">Time Taken</p>
             </div>
           </div>
+        </div>
         </CardContent>
       </Card>
       

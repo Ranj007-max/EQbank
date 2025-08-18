@@ -6,7 +6,6 @@ import type { ExamQuestion, ExamSession, MCQ } from '../types';
 import { ChevronLeft, ChevronRight, LoaderCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter } from '../components/ui/card';
-import { cn } from '../lib/utils';
 import { useSound } from '../hooks/useSound';
 import Confetti from '../components/Confetti';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -219,6 +218,21 @@ const ExamSession: React.FC = () => {
 
   const isLastQuestion = currentIndex === sessionState.questions.length - 1;
 
+  const toggleTag = (mcqId: string, batchId: string, tag: keyof MCQ['tags']) => {
+    const batch = getBatchById(batchId);
+    if (batch) {
+      const updatedQuestions = batch.questions.map(q => {
+        if (q.id === mcqId) {
+          return { ...q, tags: { ...q.tags, [tag]: !q.tags?.[tag] } };
+        }
+        return q;
+      });
+      updateBatch({ ...batch, questions: updatedQuestions });
+    }
+  };
+
+  const currentQuestionFromBatch = getBatchById(currentQuestion.batchId)?.questions.find(q => q.id === currentQuestion.id);
+
   return (
     <div className="flex flex-col h-screen bg-background text-foreground">
       {feedback === 'correct' && <Confetti />}
@@ -302,21 +316,6 @@ const ExamSession: React.FC = () => {
       </div>
 
       {/* Bottom Bar */}
-  const toggleTag = (mcqId: string, batchId: string, tag: keyof MCQ['tags']) => {
-    const batch = getBatchById(batchId);
-    if (batch) {
-      const updatedQuestions = batch.questions.map(q => {
-        if (q.id === mcqId) {
-          return { ...q, tags: { ...q.tags, [tag]: !q.tags?.[tag] } };
-        }
-        return q;
-      });
-      updateBatch({ ...batch, questions: updatedQuestions });
-    }
-  };
-
-  const currentQuestionFromBatch = getBatchById(currentQuestion.batchId)?.questions.find(q => q.id === currentQuestion.id);
-
       <footer className="h-16 border-t bg-card text-card-foreground flex items-center justify-between px-6">
         <div className="flex items-center gap-2">
           <Button variant="ghost">Report</Button>

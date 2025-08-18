@@ -16,7 +16,6 @@ import { ExamQuestion } from '../types';
 interface CreateExamPanelProps {
   config: ExamConfig;
   onConfigChange: (newConfig: Partial<ExamConfig>) => void;
-  availableSubjects: MultiSelectOption[];
   availableChapters: MultiSelectOption[];
   startExam: () => void;
   availableQuestions: number;
@@ -29,7 +28,6 @@ const TAGS = ["Hard", "Revise", "Bookmark"];
 const CreateExamPanel: React.FC<CreateExamPanelProps> = ({
   config,
   onConfigChange,
-  availableSubjects,
   availableChapters,
   startExam,
   availableQuestions,

@@ -35,10 +35,18 @@ const ExamSetup: React.FC = () => {
 
   const allQuestions = useMemo((): ExamQuestion[] => 
     batches.flatMap(batch => 
-      batch.questions.map(q => ({ ...q, batchId: batch.id, subject: batch.subject, platform: batch.platform }))
+      batch.questions.map(q => ({ ...q, batchId: batch.id, subject: batch.subject, chapter: batch.chapter, platform: batch.platform }))
     ), [batches]);
 
-  const availableSubjects = useMemo(() => [...new Set(batches.map(b => b.subject))], [batches]);
+  const availableChapters = useMemo(() => {
+    if (config.subjects.length === 0) {
+      return [];
+    }
+    const chapters = batches
+      .filter(b => config.subjects.includes(b.subject))
+      .map(b => b.chapter);
+    return [...new Set(chapters)];
+  }, [batches, config.subjects]);
 
   const availableChapters = useMemo(() => {
     if (config.subjects.length === 0) {
@@ -111,7 +119,6 @@ const ExamSetup: React.FC = () => {
         <CreateExamPanel
           config={config}
           onConfigChange={debouncedSetConfig}
-          availableSubjects={availableSubjects.map(s => ({ value: s, label: s }))}
           availableChapters={availableChapters.map(c => ({ value: c, label: c }))}
           startExam={startExam}
           availableQuestions={filteredQuestions.length}
