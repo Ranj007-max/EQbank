@@ -14,6 +14,7 @@ export interface ExamConfig {
   difficulty: number;
   numQuestions: number;
   tags: string[];
+  platform: string;
   name?: string;
 }
 
@@ -29,6 +30,7 @@ const ExamSetup: React.FC = () => {
     difficulty: 50,
     numQuestions: 50,
     tags: [],
+    platform: '',
   });
 
   const allQuestions = useMemo((): ExamQuestion[] => 
@@ -38,16 +40,33 @@ const ExamSetup: React.FC = () => {
 
   const availableSubjects = useMemo(() => [...new Set(batches.map(b => b.subject))], [batches]);
 
+  const availableChapters = useMemo(() => {
+    if (config.subjects.length === 0) {
+      return [];
+    }
+    const chapters = batches
+      .filter(b => config.subjects.includes(b.subject))
+      .map(b => b.chapter);
+    return [...new Set(chapters)];
+  }, [batches, config.subjects]);
+
   const filteredQuestions = useMemo(() => {
     return allQuestions.filter(q => {
       const subjectMatch = config.subjects.length === 0 || config.subjects.includes(q.subject);
       if (!subjectMatch) return false;
 
-      const tagMatch = config.tags.length === 0 || config.tags.some(tag => {
-        if (tag === 'Image-Based') return q.questionType === 'Image-based';
-        if (tag === 'Unattempted') return q.lastAttemptCorrect === null;
+      const platformMatch = !config.platform ||
+        (config.platform === 'unattended' && !q.platform) ||
+        q.platform === config.platform;
+      if (!platformMatch) return false;
+
+      const chapterMatch = config.chapters.length === 0 || config.chapters.includes(q.chapter);
+      if (!chapterMatch) return false;
+
+      const tagMatch = config.tags.length === 0 || config.tags.every(tag => {
+        if (tag === 'Bookmark') return q.tags?.bookmarked;
         if (tag === 'Hard') return q.tags?.hard;
-        // High-Yield is not a direct property, so we can't filter by it here
+        if (tag === 'Revise') return q.tags?.revise;
         return false;
       });
       if(!tagMatch) return false;
@@ -93,6 +112,7 @@ const ExamSetup: React.FC = () => {
           config={config}
           onConfigChange={debouncedSetConfig}
           availableSubjects={availableSubjects.map(s => ({ value: s, label: s }))}
+          availableChapters={availableChapters.map(c => ({ value: c, label: c }))}
           startExam={startExam}
           availableQuestions={filteredQuestions.length}
           savePreset={savePreset}
