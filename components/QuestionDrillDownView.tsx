@@ -31,7 +31,11 @@ const QuestionDrillDownView: React.FC<QuestionDrillDownViewProps> = ({ trigger, 
   );
 };
 
-const QuestionItem = ({ question }) => {
+interface QuestionItemProps {
+  question: MCQ;
+}
+
+const QuestionItem: React.FC<QuestionItemProps> = ({ question }) => {
     const [isRevealed, setIsRevealed] = useState(false);
 
     return (
@@ -45,7 +49,7 @@ const QuestionItem = ({ question }) => {
             )}
             {isRevealed && (
                 <div className="space-y-2 animate-fade-in">
-                    {question.options.map((option, i) => (
+                    {question.options.map((option: string, i: number) => (
                         <div key={i} className={cn("p-3 border rounded-md text-sm",
                             option === question.answer
                             ? 'bg-green-500/10 border-green-500/30 text-green-800 dark:text-green-300 font-semibold'
