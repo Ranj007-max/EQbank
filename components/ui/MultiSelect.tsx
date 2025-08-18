@@ -1,4 +1,5 @@
 import * as React from "react";
+feat/revamp-review-section
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Button } from "./button";
@@ -7,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "./input";
 import { Checkbox } from "./checkbox";
 import { Label } from "./label";
+
 
 export interface MultiSelectOption {
   value: string;
@@ -24,7 +26,9 @@ interface MultiSelectProps {
 const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
   ({ options, selected, onChange, className, placeholder = "Select options...", ...props }, ref) => {
     const [open, setOpen] = React.useState(false);
+ 
     const [search, setSearch] = React.useState('');
+
 
     const handleSelect = (value: string) => {
       const newSelected = selected.includes(value)
@@ -33,11 +37,13 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
       onChange(newSelected);
     };
 
+feat/revamp-review-section
     const filteredOptions = options.filter(option => option.label.toLowerCase().includes(search.toLowerCase()));
 
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
+
           <Button
             ref={ref}
             variant="outline"
@@ -56,18 +62,23 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                     variant="secondary"
                     key={option!.value}
                     className="mr-1 mb-1"
+ feat/revamp-review-section
                     onClick={(e: React.MouseEvent) => {
+
                       e.stopPropagation();
                       handleSelect(option!.value);
                     }}
                   >
                     {option!.label}
+feat/revamp-review-section
                     <X className="ml-1 h-3 w-3" />
+
                   </Badge>
                 ))}
             </div>
             <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
           </Button>
+
         </DialogTrigger>
         <DialogContent className="p-0">
             <DialogHeader className="p-4 border-b">
@@ -97,6 +108,7 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
             </div>
         </DialogContent>
       </Dialog>
+
     );
   }
 );

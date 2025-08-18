@@ -12,14 +12,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
+ feat/revamp-review-section
 import { Tag, StudyQuestion } from '../types';
 import { MultiSelect } from '../components/ui/MultiSelect';
+
 
 interface ReviewSettings {
   questionLimit: number;
   subjects: string[];
   tags: Tag[];
 }
+
 
 const SrsReviewSession: React.FC = () => {
   const navigate = useNavigate();
@@ -40,12 +43,14 @@ const SrsReviewSession: React.FC = () => {
     tags: [],
   });
 
+ feat/revamp-review-section
   const availableSubjects = useMemo(() => statsBySubject.map(s => s.name), [statsBySubject]);
 
   const availableTags = useMemo((): Tag[] => {
     const tags: Tag[] = ['bookmarked', 'hard', 'revise', 'mistaked'];
     return tags.filter(tag => tagStats[tag] > 0);
   }, [tagStats]);
+
 
   const questions = useMemo(() => {
     let filteredQuestions = dueReviewQuestions || [];
@@ -58,6 +63,7 @@ const SrsReviewSession: React.FC = () => {
       });
     }
 
+
     if (reviewSettings.tags.length > 0) {
       filteredQuestions = filteredQuestions.filter(q => {
         return reviewSettings.tags.every(tag => q.tags[tag]);
@@ -69,6 +75,7 @@ const SrsReviewSession: React.FC = () => {
   }, [dueReviewQuestions, reviewSettings, getBatchById]);
 
   const currentQuestion = sessionStarted ? sessionQuestions[currentQuestionIndex] : questions[currentQuestionIndex];
+
   const selectedOption = currentQuestion ? selectedAnswers[currentQuestion.id] : undefined;
   
   useEffect(() => {
@@ -99,6 +106,7 @@ const SrsReviewSession: React.FC = () => {
     setSelectedAnswers({});
     setSessionEnded(false);
     setSessionStarted(true);
+
   };
 
   const toggleTag = (tag: 'bookmarked' | 'hard') => {
@@ -303,9 +311,11 @@ const SrsReviewSession: React.FC = () => {
                   placeholder="Write your notes here..."
                 />
                 <Button onClick={() => {
+                    
                   if(currentQuestion) {
                     updateQuestionNotes(currentQuestion.batchId, currentQuestion.id, currentNotes);
                   }
+
                   setIsNotesModalOpen(false);
                 }}>Save Notes</Button>
               </DialogContent>
