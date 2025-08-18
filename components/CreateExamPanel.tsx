@@ -85,17 +85,15 @@ const CreateExamPanel: React.FC<CreateExamPanelProps> = ({
           {/* Column 1 */}
           <div className="space-y-4">
             <div>
-              <Label htmlFor="subjects">Subject</Label>
-              <Select onValueChange={(value) => onConfigChange({ subjects: [value] })}>
-                <SelectTrigger id="subjects" aria-label="Select Subject">
-                  <SelectValue placeholder="Select a subject" />
-                </SelectTrigger>
-                <SelectContent>
-                  {MBBS_SUBJECTS.map(subject => (
-                    <SelectItem key={subject} value={subject}>{subject}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="subjects">Subjects</Label>
+              <MultiSelect
+                options={MBBS_SUBJECTS.map(s => ({ value: s, label: s }))}
+                selected={config.subjects}
+                onChange={(selected) => onConfigChange({ subjects: selected })}
+                className="w-full"
+                placeholder="Select Subjects"
+                aria-label="Select Subjects for Exam"
+              />
             </div>
             <div>
               <Label htmlFor="chapters">Chapters</Label>
