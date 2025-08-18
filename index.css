@@ -251,6 +251,10 @@
     box-shadow: 3px 3px 6px #000000, -3px -3px 6px #2a2a2a;
   }
 
+.neumorphic-slider::-webkit-slider-thumb {
+  background: #00A8FF;
+}
+
   .neumorphic-button {
     background-color: hsl(var(--background));
     border: 1px solid hsl(var(--border) / 0.2);
@@ -315,15 +319,6 @@
   transform: scale(0);
   animation: ripple 600ms linear;
   background-color: rgba(255, 255, 255, 0.7);
-}
-
-.card-tilt {
-  transition: transform 0.5s;
-  transform-style: preserve-3d;
-}
-
-.card-tilt:hover {
-  transform: perspective(1000px) rotateX(5deg) rotateY(5deg) scale3d(1.05, 1.05, 1.05);
 }
 
 .float-label-input {
