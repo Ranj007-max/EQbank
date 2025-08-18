@@ -3,9 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { useAnalytics } from '../context/AnalyticsContext';
 import type { ExamQuestion, ExamSession } from '../types';
-import { ChevronLeft, ChevronRight, Flag, Power, LoaderCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Power, LoaderCircle, MoreVertical } from 'lucide-react';
 import Timer from '../components/Timer';
 import { Button } from '../components/ui/button';
+import { Progress } from '../components/ui/progress';
+import { ProgressRing } from '../components/ui/progress-ring';
 import { Card, CardHeader, CardContent, CardFooter } from '../components/ui/card';
 import { cn } from '../lib/utils';
 
@@ -25,6 +27,7 @@ const ExamSession: React.FC = () => {
   
   const [sessionState, setSessionState] = useState<SessionState | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const savedSession = sessionStorage.getItem('examSession');
@@ -113,18 +116,6 @@ const ExamSession: React.FC = () => {
     if (!currentQuestion) return;
     setSessionState(prev => prev ? { ...prev, answers: { ...prev.answers, [currentQuestion.id]: option } } : null);
   };
-
-  const toggleMarkForReview = () => {
-    if (!currentQuestion) return;
-    setSessionState(prev => {
-        if (!prev) return null;
-        const isMarked = prev.markedForReview.includes(currentQuestion.id);
-        const newMarked = isMarked 
-            ? prev.markedForReview.filter(id => id !== currentQuestion.id)
-            : [...prev.markedForReview, currentQuestion.id];
-        return { ...prev, markedForReview: newMarked };
-    });
-  };
   
   if (!sessionState || !currentQuestion) {
     return (
@@ -137,68 +128,124 @@ const ExamSession: React.FC = () => {
   const isLastQuestion = currentIndex === sessionState.questions.length - 1;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-120px)]">
-      <Card className="flex-grow flex flex-col">
-        <CardHeader className="flex-row justify-between items-center border-b p-4">
-          <div>
-            <h2 className="text-xl font-bold text-foreground">Question {currentIndex + 1}</h2>
-            <p className="text-sm text-muted-foreground">{currentQuestion.subject} | {currentQuestion.platform}</p>
-          </div>
-          <Timer initialSeconds={(sessionState.config.durationMinutes * 60) - Math.floor((Date.now() - sessionState.startTime)/1000)} onTimeUp={handleEndExam} isPaused={false} />
-        </CardHeader>
-        
-        <CardContent className="flex-grow overflow-y-auto p-6">
-            <p className="text-lg font-semibold text-foreground mb-6 leading-relaxed">{currentQuestion.question}</p>
-            <div className="space-y-3">
-            {currentQuestion.options.map((option, i) => (
-                <label key={i} className={cn('p-3 border rounded-lg transition-all flex items-center gap-4 cursor-pointer', sessionState.answers[currentQuestion.id] === option ? 'bg-primary/10 border-primary ring-2 ring-primary' : 'bg-muted/30 border-border hover:border-primary/50')}>
-                    <input type="radio" name={`q_${currentQuestion.id}`} value={option} checked={sessionState.answers[currentQuestion.id] === option} onChange={() => handleSelectAnswer(option)} className="h-5 w-5 accent-primary" />
-                    <span className="font-medium text-base">{option}</span>
-                </label>
-            ))}
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100">
+      {/* Zone 1: Top Bar */}
+      <header className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-800 flex-shrink-0 bg-white dark:bg-gray-950 h-20">
+        <div className="flex items-center gap-4">
+            <div className="relative">
+                <ProgressRing
+                    progress={100 - (((sessionState.config.durationMinutes * 60) - Math.floor((Date.now() - sessionState.startTime)/1000)) / (sessionState.config.durationMinutes * 60)) * 100}
+                    size={56}
+                    strokeWidth={5}
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <Timer
+                        initialSeconds={(sessionState.config.durationMinutes * 60) - Math.floor((Date.now() - sessionState.startTime)/1000)}
+                        onTimeUp={handleEndExam}
+                        isPaused={false}
+                        className="text-sm font-mono"
+                    />
+                </div>
             </div>
-        </CardContent>
-        
-        <CardFooter className="flex justify-between items-center border-t p-3 bg-muted/30">
-          <Button onClick={toggleMarkForReview} variant={sessionState.markedForReview.includes(currentQuestion.id) ? 'warning' : 'outline'}>
-            <Flag size={18} className="mr-2"/>
-            {sessionState.markedForReview.includes(currentQuestion.id) ? 'Marked' : 'Mark for Review'}
-          </Button>
-          <div className="flex gap-2">
-            <Button onClick={() => changeQuestion(currentIndex - 1)} disabled={currentIndex === 0} variant="outline">
-              <ChevronLeft size={20} className="mr-2" /> Previous
-            </Button>
-            <Button onClick={() => isLastQuestion ? handleEndExam() : changeQuestion(currentIndex + 1)} variant={isLastQuestion ? 'gradient' : 'default'}>
-              {isLastQuestion ? 'Finish & Submit' : 'Save & Next'} <ChevronRight size={20} className="ml-2" />
-            </Button>
-          </div>
-        </CardFooter>
-      </Card>
-
-      <Card className="w-full lg:w-72 flex-shrink-0 p-4 flex flex-col">
-        <h3 className="font-bold text-foreground mb-3 text-center">Question Palette</h3>
-        <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-8 lg:grid-cols-5 gap-2 flex-grow overflow-y-auto content-start">
-          {sessionState.questions.map((q, index) => {
-            const isMarked = sessionState.markedForReview.includes(q.id);
-            const isAnswered = sessionState.answers[q.id] !== undefined;
-            const isCurrent = index === currentIndex;
-            
-            let variant: "success" | "warning" | "default" | "outline" = 'outline';
-            if (isAnswered) variant = 'success';
-            if (isMarked) variant = 'warning';
-            if (!isAnswered && !isMarked && sessionState.visited.includes(q.id)) variant = 'default';
-
-            return (
-              <Button key={q.id} onClick={() => changeQuestion(index)} variant={variant} size="icon" className={cn("h-10 w-10", isCurrent && 'ring-2 ring-ring ring-offset-2 ring-offset-background')}>
-                {index + 1}
-              </Button>
-            );
-          })}
+            <div className="flex-grow w-48 sm:w-64">
+                <span className="text-sm font-semibold">{`Question ${currentIndex + 1} of ${sessionState.questions.length}`}</span>
+                <Progress value={(currentIndex + 1) / sessionState.questions.length * 100} className="h-2 mt-1" />
+            </div>
         </div>
-        <Button onClick={handleEndExam} variant="destructive" className="w-full mt-4">
-          <Power size={18} className="mr-2"/> End Exam
-        </Button>
-      </Card>
+        <div className="relative">
+          <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(prev => !prev)}>
+            <MoreVertical size={20} />
+          </Button>
+          {isMenuOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-10 border border-gray-200 dark:border-gray-700">
+              <ul className="py-1">
+                <li>
+                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Settings</button>
+                </li>
+                <li>
+                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Dark Mode</button>
+                </li>
+                <li>
+                  <button onClick={handleEndExam} className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50">
+                    End Exam
+                  </button>
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
+      </header>
+
+      <div className="flex flex-grow overflow-hidden">
+        {/* Zone 2: Main Question Panel */}
+        <main className="flex-grow p-4 sm:p-6 md:p-8 overflow-y-auto">
+          <div className="max-w-4xl mx-auto">
+            <div key={currentIndex} className="animate-question-change">
+              <Card className="flex-grow flex flex-col shadow-lg border-none bg-white dark:bg-gray-950 rounded-xl">
+                <CardHeader className="p-6">
+                  <p className="text-lg sm:text-xl font-semibold text-foreground leading-relaxed">{currentQuestion.question}</p>
+              </CardHeader>
+
+              <CardContent className="flex-grow p-6">
+                  <div className="space-y-4">
+                  {currentQuestion.options.map((option, i) => (
+                      <Button
+                        key={i}
+                        variant="outline"
+                        onClick={() => handleSelectAnswer(option)}
+                        className={cn(
+                          "w-full h-auto justify-start p-4 text-base whitespace-normal rounded-lg hover:shadow-md transition-all",
+                          sessionState.answers[currentQuestion.id] === option && "text-white hover:shadow-xl shadow-lg bg-gradient-to-r from-blue-500 to-teal-400"
+                        )}
+                      >
+                          <span className="font-mono text-sm mr-4 opacity-70">{String.fromCharCode(65 + i)}.</span>
+                          <span className="text-left flex-1">{option}</span>
+                      </Button>
+                  ))}
+                  </div>
+              </CardContent>
+
+              <CardFooter className="flex justify-end items-center border-t p-4 bg-gray-50 dark:bg-gray-900/50 rounded-b-xl">
+                <div className="flex gap-2">
+                  <Button onClick={() => changeQuestion(currentIndex - 1)} disabled={currentIndex === 0} variant="outline">
+                    <ChevronLeft size={20} /> <span className="hidden sm:inline ml-2">Previous</span>
+                  </Button>
+                  <Button onClick={() => isLastQuestion ? handleEndExam() : changeQuestion(currentIndex + 1)} variant={isLastQuestion ? 'destructive' : 'default'}>
+                    {isLastQuestion ? 'Finish & Submit' : 'Save & Next'} <ChevronRight size={20} className="ml-2" />
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
+            </div>
+          </div>
+        </main>
+
+        {/* Zone 3: Right Sidebar */}
+        <aside className="w-full lg:w-80 flex-shrink-0 border-l border-gray-200 dark:border-gray-800 p-4 flex-col bg-white dark:bg-gray-950 hidden lg:flex">
+          <h3 className="font-bold text-foreground mb-4 text-center text-lg">Question Navigator</h3>
+          <div className="grid grid-cols-6 gap-2 flex-grow overflow-y-auto content-start p-2 bg-gray-100 dark:bg-gray-900 rounded-lg">
+            {sessionState.questions.map((q, index) => {
+              const isMarked = sessionState.markedForReview.includes(q.id);
+              const isAnswered = sessionState.answers[q.id] !== undefined;
+              const isCurrent = index === currentIndex;
+
+              let statusClass = 'bg-gray-300 dark:bg-gray-700 hover:bg-gray-400';
+              if (sessionState.visited.includes(q.id) && !isAnswered) statusClass = 'bg-yellow-400/80 dark:bg-yellow-600/80 hover:bg-yellow-500 text-black'; // Skipped
+              if (isAnswered) statusClass = 'bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 text-white'; // Answered
+              if (isMarked) statusClass = 'bg-red-500 dark:bg-red-600 hover:bg-red-600 text-white'; // Marked
+
+              return (
+                <button key={q.id} onClick={() => changeQuestion(index)} className={cn("h-10 w-10 rounded-full flex items-center justify-center font-bold transition-all duration-200", statusClass, isCurrent && 'ring-4 ring-primary ring-offset-2 ring-offset-background dark:ring-offset-gray-950')}>
+                  {index + 1}
+                </button>
+              );
+            })}
+          </div>
+          <Button onClick={handleEndExam} variant="destructive" className="w-full mt-4">
+            <Power size={18} className="mr-2"/> End Exam
+          </Button>
+        </aside>
+      </div>
     </div>
   );
 };

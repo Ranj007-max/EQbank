@@ -14,6 +14,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (progress / 100) * circumference;
+  const gradientId = `progress-gradient-${React.useId()}`;
 
   return (
     <svg
@@ -21,6 +22,12 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
       width={size}
       height={size}
     >
+      <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#3b82f6" /> {/* blue-500 */}
+          <stop offset="100%" stopColor="#2dd4bf" /> {/* teal-400 */}
+        </linearGradient>
+      </defs>
       <circle
         className="text-muted"
         stroke="currentColor"
@@ -31,8 +38,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
         cy={size / 2}
       />
       <circle
-        className="text-primary transition-all duration-500 ease-in-out"
-        stroke="currentColor"
+        stroke={`url(#${gradientId})`}
         strokeWidth={strokeWidth}
         strokeDasharray={circumference}
         strokeDashoffset={offset}
@@ -41,6 +47,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
         r={radius}
         cx={size / 2}
         cy={size / 2}
+        style={{ transition: 'stroke-dashoffset 0.5s ease-in-out' }}
       />
     </svg>
   );
