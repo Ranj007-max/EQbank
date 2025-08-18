@@ -63,7 +63,6 @@
     --destructive: 0 100% 65%; /* Error Red */
     --warning: 42 100% 50%; /* Warning Amber */
     --destructive-foreground: 0 0% 98%;
-
     --border: 0 0% 20%;
     --input: 0 0% 25%;
     --ring: 205 100% 50%;
@@ -91,11 +90,13 @@
 @layer base {
   h1 {
     font-size: calc(28px * var(--font-size-multiplier, 1));
-    @apply font-bold leading-[1.2] tracking-[-0.5px] font-display;
+    font-family: theme('fontFamily.display');
+    @apply font-bold leading-[1.2] tracking-[-0.5px];
   }
   h2 {
     font-size: calc(20px * var(--font-size-multiplier, 1));
-    @apply font-medium leading-[1.4] font-display;
+    font-family: theme('fontFamily.display');
+    @apply font-medium leading-[1.4];
   }
   p, body {
     font-size: calc(18px * var(--font-size-multiplier, 1));
@@ -282,4 +283,89 @@
 
 .animate-pulse-on-complete {
   animation: pulse-on-complete 2s infinite;
+}
+
+@keyframes warning-flash {
+  50% {
+    color: hsl(var(--destructive));
+  }
+}
+
+.animate-warning-flash {
+  animation: warning-flash 1s infinite;
+}
+
+@keyframes fade-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes green-pulse {
+  0% {
+    box-shadow: 0 0 0 0 hsl(var(--success) / 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px hsl(var(--success) / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 hsl(var(--success) / 0);
+  }
+}
+
+@keyframes shake {
+  10%, 90% {
+    transform: translateX(-1px);
+  }
+  20%, 80% {
+    transform: translateX(2px);
+  }
+  30%, 50%, 70% {
+    transform: translateX(-4px);
+  }
+  40%, 60% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  animation: confetti-fall linear;
 }

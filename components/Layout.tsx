@@ -59,7 +59,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </aside>
 
         <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-y-auto p-10">
+          <main className="flex-1 overflow-y-auto p-10 animate-fade-slide-in">
               {children}
           </main>
         </div>
