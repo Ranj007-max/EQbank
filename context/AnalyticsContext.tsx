@@ -9,6 +9,7 @@ interface AnalyticsContextType {
   updateBatch: (updatedBatch: Batch) => void;
   recordAnswer: (batchId: string, questionId: string, isCorrect: boolean) => void;
   recordMultipleAnswers: (answers: Array<{ batchId: string, questionId: string, isCorrect: boolean }>) => void;
+  updateQuestionNotes: (batchId: string, questionId: string, notes: string) => void;
   
   studyHistory: StudySessionResult[];
   addStudySession: (session: StudySessionResult) => void;
@@ -118,6 +119,21 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
         return { ...batch, questions: updatedQuestions };
       });
     });
+  };
+
+  const updateQuestionNotes = (batchId: string, questionId: string, notes: string) => {
+    setBatches(prevBatches => prevBatches.map(batch => {
+      if (batch.id === batchId) {
+        const updatedQuestions = batch.questions.map(q => {
+          if (q.id === questionId) {
+            return { ...q, notes };
+          }
+          return q;
+        });
+        return { ...batch, questions: updatedQuestions };
+      }
+      return batch;
+    }));
   };
 
   // --- Computational Logic & Derived State (The "Engine") ---
@@ -325,7 +341,7 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
   };
   
   const value: AnalyticsContextType = {
-    batches, addBatch, getBatchById, updateBatch, recordAnswer, recordMultipleAnswers,
+    batches, addBatch, getBatchById, updateBatch, recordAnswer, recordMultipleAnswers, updateQuestionNotes,
     studyHistory, addStudySession,
     examHistory, addExamSession, getExamById,
     goal, setGoal,
