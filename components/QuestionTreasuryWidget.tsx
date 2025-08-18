@@ -1,85 +1,64 @@
-
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { ChevronDown, Database } from 'lucide-react';
+import { Database, ChevronDown } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { Progress } from './ui/progress';
-
-interface StatItem {
-  name: string;
-  total: number;
-  attempted: number;
-}
+import { MCQ } from '../types';
+import { Badge } from './ui/badge';
 
 interface QuestionTreasuryWidgetProps {
-  statsByPlatform: StatItem[];
-  statsBySubject: StatItem[];
-  statsByChapter: StatItem[];
+  questions: MCQ[];
 }
 
-const StatTable: React.FC<{ title: string; data: StatItem[] }> = ({ title, data }) => {
-  if (!data || data.length === 0) {
+const QuestionCard: React.FC<{ question: MCQ, index: number }> = ({ question, index }) => {
     return (
-      <div>
-        <h3 className="text-xl font-semibold mb-3">{title}</h3>
-        <p className="text-muted-foreground">No data available.</p>
+        <details className="group bg-card border rounded-lg overflow-hidden">
+            <summary className="p-4 cursor-pointer flex justify-between items-center hover:bg-muted/50">
+                <div className="flex items-center gap-4">
+                    <span className="text-muted-foreground text-sm">{index + 1}.</span>
+                    <p className="font-semibold flex-1">{question.question}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Badge variant={question.difficulty === 'Hard' ? 'destructive' : question.difficulty === 'Medium' ? 'secondary' : 'outline'}>
+                        {question.difficulty}
+                    </Badge>
+                    <ChevronDown className="h-5 w-5 transition-transform duration-200 group-open:rotate-180" />
+                </div>
+            </summary>
+            <div className="p-4 border-t bg-muted/20">
+                <div className="space-y-2 mb-4">
+                    {question.options.map((option, i) => (
+                        <div key={i} className={cn("p-3 border rounded-md text-sm",
+                            option === question.answer
+                            ? 'bg-green-500/10 border-green-500/30 text-green-800 dark:text-green-300 font-semibold'
+                            : 'bg-card'
+                        )}>
+                        {String.fromCharCode(65 + i)}. {option}
+                        </div>
+                    ))}
+                </div>
+                <div className="mt-4 p-4 bg-background rounded-lg border">
+                    <p className="font-semibold text-foreground">Explanation:</p>
+                    <p className="mt-1 text-muted-foreground text-sm">{question.explanation}</p>
+                </div>
+            </div>
+        </details>
+    )
+}
+
+export const QuestionTreasuryWidget: React.FC<QuestionTreasuryWidgetProps> = ({ questions }) => {
+  if (!questions || questions.length === 0) {
+    return (
+      <div className="text-center py-16 text-muted-foreground">
+        <Database size={48} className="mx-auto mb-4" />
+        <h3 className="text-xl font-semibold">No Questions Found</h3>
+        <p>Try adjusting your filters or importing more questions.</p>
       </div>
     );
   }
 
   return (
-    <div>
-      <h3 className="text-xl font-semibold mb-4">{title}</h3>
-      <div className="space-y-3">
-        {data.map((item, index) => {
-          const percentage = item.total > 0 ? (item.attempted / item.total) * 100 : 0;
-          return (
-            <div key={index} className="transition-all duration-300 ease-in-out p-3 rounded-lg hover:bg-white/10">
-              <div className="flex justify-between items-center mb-1">
-                <span className="font-medium truncate pr-4">{item.name}</span>
-                <span className="text-sm text-muted-foreground">{item.attempted} / {item.total}</span>
-              </div>
-              <Progress value={percentage} />
-            </div>
-          );
-        })}
-      </div>
+    <div className="space-y-4">
+        {questions.map((question, index) => (
+            <QuestionCard key={question.id} question={question} index={index} />
+        ))}
     </div>
-  );
-};
-
-export const QuestionTreasuryWidget: React.FC<QuestionTreasuryWidgetProps> = ({
-  statsByPlatform,
-  statsBySubject,
-  statsByChapter,
-}) => {
-  const [isOpen, setIsOpen] = useState(true);
-
-  return (
-    <Card className={cn("glass-card", "glow-border")}>
-      <CardHeader
-        className="flex flex-row items-center justify-between cursor-pointer"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <CardTitle className="flex items-center text-2xl">
-          <Database size={24} className="mr-3 text-primary" />
-          Question Treasury
-        </CardTitle>
-        <Button variant="ghost" size="icon">
-          <ChevronDown className={cn("transition-transform duration-300", !isOpen && "-rotate-180")} />
-        </Button>
-      </CardHeader>
-      <div className={cn(
-          "transition-all duration-500 ease-in-out overflow-hidden",
-          isOpen ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
-      )}>
-        <CardContent className="grid md:grid-cols-3 gap-8 pt-4">
-          <StatTable title="By Platform" data={statsByPlatform} />
-          <StatTable title="By Subject" data={statsBySubject} />
-          <StatTable title="By Chapter" data={statsByChapter} />
-        </CardContent>
-      </div>
-    </Card>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAnalytics } from '../context/AnalyticsContext';
-import { Edit, Target, Save, X } from 'lucide-react';
+import { Target, Save } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -26,8 +26,8 @@ export const GoalTrackerWidget: React.FC = () => {
                     <Target size={22} />
                     Weekly Goal
                 </CardTitle>
-                <Button variant="ghost" size="icon" onClick={() => setIsEditing(!isEditing)} className="h-8 w-8">
-                    {isEditing ? <X size={18} /> : <Edit size={18} />}
+                <Button variant="ghost" onClick={() => setIsEditing(!isEditing)} className="btn-premium-label text-sm">
+                    {isEditing ? 'Cancel' : 'Edit Goal'}
                 </Button>
             </CardHeader>
             <CardContent>

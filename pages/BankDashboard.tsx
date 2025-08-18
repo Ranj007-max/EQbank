@@ -1,30 +1,66 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
-import { PlusCircle, Zap, BrainCircuit, Download, Upload } from 'lucide-react';
-
+import { PlusCircle, Zap, Download, Upload, Search } from 'lucide-react';
 import StudyPanel from '../components/StudyPanel';
-import { GoalTrackerWidget } from '../components/GoalTrackerWidget';
-import { TopicsToWatchWidget } from '../components/TopicsToWatchWidget';
-import { TagStatsWidget } from '../components/TagStatsWidget';
 import { QuestionTreasuryWidget } from '../components/QuestionTreasuryWidget';
 import { Button } from '../components/ui/button';
-import { cn } from '../lib/utils';
 import { AppData } from '../types';
+import { Input } from '../components/ui/input';
+import { TreasuryFilters } from '../components/TreasuryFilters';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
 const BankDashboard: React.FC = () => {
   const { 
-    topicsToWatch,
-    tagStats,
-    statsByPlatform,
-    statsBySubject,
-    statsByChapter,
+    batches,
     exportData,
     importData
   } = useAnalytics();
   
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState('date-desc');
+
+  // Placeholder for filters state
+  // const [activeFilters, setActiveFilters] = useState({});
+
+  const filteredQuestions = useMemo(() => {
+    const allQuestionsWithBatchInfo = batches.flatMap(b => b.questions.map(q => ({
+        ...q,
+        batchCreatedAt: b.createdAt,
+    })));
+
+    let filtered = allQuestionsWithBatchInfo.filter(q =>
+      q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      q.explanation.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // TODO: Add logic for activeFilters here
+
+    const difficultyMap = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
+
+    filtered.sort((a, b) => {
+        switch (sortOrder) {
+            case 'date-asc':
+                return new Date(a.batchCreatedAt).getTime() - new Date(b.batchCreatedAt).getTime();
+            case 'difficulty-asc':
+                return difficultyMap[a.difficulty] - difficultyMap[b.difficulty];
+            case 'difficulty-desc':
+                return difficultyMap[b.difficulty] - difficultyMap[a.difficulty];
+            case 'accuracy-asc':
+                return (a.lastAttemptCorrect === true ? 1 : 0) - (b.lastAttemptCorrect === true ? 1 : 0);
+            case 'accuracy-desc':
+                return (b.lastAttemptCorrect === true ? 1 : 0) - (a.lastAttemptCorrect === true ? 1 : 0);
+            case 'date-desc':
+            default:
+                return new Date(b.batchCreatedAt).getTime() - new Date(a.batchCreatedAt).getTime();
+        }
+    });
+
+    return filtered;
+  }, [batches, searchQuery, sortOrder]);
+
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -61,14 +97,14 @@ const BankDashboard: React.FC = () => {
         accept=".json"
       />
       
-      <div className="animate-fade-in space-y-12">
+      <div className="animate-fade-in space-y-8">
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-5xl font-bold tracking-tighter gradient-text">
-              Question Bank
+              Question Treasury
             </h1>
             <p className="text-muted-foreground mt-4 text-lg max-w-2xl">
-              Your central hub for managing, reviewing, and mastering questions. Analyze your performance and dive into targeted study sessions.
+              Your structured library for all questions. Filter, sort, and review with precision.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4 mt-2">
@@ -86,42 +122,49 @@ const BankDashboard: React.FC = () => {
                 Add Questions
               </Link>
             </Button>
-            <Button onClick={() => setIsPanelOpen(true)} className="btn-gradient">
+            <Button onClick={() => setIsPanelOpen(true)} className="btn-gradient rounded-full">
               <Zap size={18} className="mr-2" />
               Start Study Session
             </Button>
           </div>
         </div>
       
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-3">
-             <QuestionTreasuryWidget
-                statsByPlatform={statsByPlatform}
-                statsBySubject={statsBySubject}
-                statsByChapter={statsByChapter}
-              />
-          </div>
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+          {/* Left Sidebar for Filters */}
+          <aside className="lg:col-span-1 lg:sticky lg:top-24 space-y-6">
+              <TreasuryFilters />
+          </aside>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-                <TagStatsWidget stats={tagStats} />
+          {/* Main Content Area */}
+          <main className="lg:col-span-3 space-y-6">
+            <div className="flex items-center gap-4">
+                <div className="relative w-full">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                        placeholder="Search questions..."
+                        className="pl-10"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+                <Select value={sortOrder} onValueChange={setSortOrder}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Sort by..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="date-desc">Date Added (Newest)</SelectItem>
+                        <SelectItem value="date-asc">Date Added (Oldest)</SelectItem>
+                        <SelectItem value="difficulty-desc">Difficulty (Hardest)</SelectItem>
+                        <SelectItem value="difficulty-asc">Difficulty (Easiest)</SelectItem>
+                        <SelectItem value="accuracy-asc">Accuracy (Lowest)</SelectItem>
+                        <SelectItem value="accuracy-desc">Accuracy (Highest)</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
-            <GoalTrackerWidget />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <TopicsToWatchWidget topics={topicsToWatch} />
-          {/* Consider replacing this with a different widget for variety */}
-          <div className={cn("glass-card", "p-6 rounded-lg")}>
-            <h3 className="text-xl font-semibold mb-4 flex items-center">
-              <BrainCircuit size={22} className="mr-3 text-secondary" />
-              Coming Soon
-            </h3>
-            <p className="text-muted-foreground">
-              More advanced analytics and visualizations will be available here to further enhance your study patterns.
-            </p>
-          </div>
+             <QuestionTreasuryWidget
+                questions={filteredQuestions}
+              />
+          </main>
         </div>
       </div>
     </>

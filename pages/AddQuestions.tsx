@@ -89,7 +89,17 @@ const AddQuestions: React.FC = () => {
       questions: questionsToSave.map((mcq): MCQ => ({
         id: uuidv4(),
         ...mcq,
-        tags: { bookmarked: false, hard: false, revise: false, mistaked: false },
+        difficulty: 'Medium',
+        questionType: 'MCQ',
+        tags: {
+            bookmarked: false,
+            hard: false,
+            revise: false,
+            mistaked: false,
+            highYield: false,
+            caseBased: false,
+            pyq: false
+        },
         lastAttemptCorrect: null,
         srsLevel: 0,
         nextReviewDate: new Date().toISOString(),

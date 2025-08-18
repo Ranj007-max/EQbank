@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, ReactNode } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
-import { Batch, StudySessionResult, ExamSession, MCQ, Activity, AppData, UserGoal, StudyQuestion } from '../types';
+import { Batch, StudySessionResult, ExamSession, MCQ, Activity, AppData, UserGoal, StudyQuestion, Tag } from '../types';
 
 interface AnalyticsContextType {
   batches: Batch[];
@@ -24,7 +24,7 @@ interface AnalyticsContextType {
   // Derived Analytics
   allQuestions: MCQ[];
   dueReviewQuestions: StudyQuestion[];
-  tagStats: { bookmarked: number; hard: number; revise: number; mistaked: number; };
+  tagStats: { [key in Tag]: number };
   performanceBySubject: Array<{ subject: string; correct: number; total: number; accuracy: number; }>;
   topicsToWatch: Array<{ subject: string; accuracy: number; }>;
   recentActivity: Activity[];
@@ -54,7 +54,24 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
 
   // --- Core Data Mutators ---
   const addBatch = (batch: Batch) => {
-    setBatches(prev => [...prev, batch].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+    const normalizedBatch = {
+      ...batch,
+      questions: batch.questions.map(q => ({
+        ...q,
+        difficulty: q.difficulty || 'Medium',
+        questionType: q.questionType || 'MCQ',
+        tags: {
+          bookmarked: q.tags?.bookmarked || false,
+          hard: q.tags?.hard || false,
+          revise: q.tags?.revise || false,
+          mistaked: q.tags?.mistaked || false,
+          highYield: q.tags?.highYield || false,
+          caseBased: q.tags?.caseBased || false,
+          pyq: q.tags?.pyq || false,
+        },
+      })),
+    };
+    setBatches(prev => [...prev, normalizedBatch].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
   };
   
   const updateBatch = (updatedBatch: Batch) => {
@@ -141,12 +158,18 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
   const allQuestions = useMemo(() => batches.flatMap(b => b.questions), [batches]);
 
   const tagStats = useMemo(() => {
-    const stats = { bookmarked: 0, hard: 0, revise: 0, mistaked: 0 };
+    const stats: { [key in Tag]: number } = {
+        bookmarked: 0, hard: 0, revise: 0, mistaked: 0,
+        highYield: 0, caseBased: 0, pyq: 0
+    };
     allQuestions.forEach(q => {
-      if (q.tags.bookmarked) stats.bookmarked++;
-      if (q.tags.hard) stats.hard++;
-      if (q.tags.revise) stats.revise++;
-      if (q.lastAttemptCorrect === false) stats.mistaked++;
+        if (q.tags.bookmarked) stats.bookmarked++;
+        if (q.tags.hard) stats.hard++;
+        if (q.tags.revise) stats.revise++;
+        if (q.lastAttemptCorrect === false) stats.mistaked++;
+        if (q.tags.highYield) stats.highYield++;
+        if (q.tags.caseBased) stats.caseBased++;
+        if (q.tags.pyq) stats.pyq++;
     });
     return stats;
   }, [allQuestions]);
@@ -327,7 +350,24 @@ export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
         return false;
     }
     try {
-        setBatches(data.batches);
+        const normalizedBatches = data.batches.map(batch => ({
+            ...batch,
+            questions: batch.questions.map(q => ({
+                ...q,
+                difficulty: q.difficulty || 'Medium',
+                questionType: q.questionType || 'MCQ',
+                tags: {
+                    bookmarked: q.tags?.bookmarked || false,
+                    hard: q.tags?.hard || false,
+                    revise: q.tags?.revise || false,
+                    mistaked: q.tags?.mistaked || false,
+                    highYield: q.tags?.highYield || false,
+                    caseBased: q.tags?.caseBased || false,
+                    pyq: q.tags?.pyq || false,
+                },
+            })),
+        }));
+        setBatches(normalizedBatches);
         setStudyHistory(data.studyHistory);
         setExamHistory(data.examHistory);
         alert('Data imported successfully! The page will now reload.');
