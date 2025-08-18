@@ -15,7 +15,7 @@ interface QuickReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   questions: ExamQuestion[];
-  answers: Record<string, string>;
+  answers: Record<string, string | null>;
   markedForReview: string[];
   currentIndex: number;
   onQuestionSelect: (index: number) => void;

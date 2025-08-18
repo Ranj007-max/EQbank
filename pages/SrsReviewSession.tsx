@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStudy } from '../context/StudyContext';
 import { useBatches } from '../context/BatchContext';
 import * as dataService from '../services/dataService';
-import { CheckCircle, XCircle, BrainCircuit, SlidersHorizontal, ArrowRight, LoaderCircle } from 'lucide-react';
+import { CheckCircle, XCircle, BrainCircuit, SlidersHorizontal, ArrowRight } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import ReviewSessionSummary from '../components/ReviewSessionSummary';
 import { Card, CardContent, CardFooter, CardHeader } from '../components/ui/card';

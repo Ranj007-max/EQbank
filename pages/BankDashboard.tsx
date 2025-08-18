@@ -5,7 +5,7 @@ import { PlusCircle, Zap, Download, Upload, Search, Book } from 'lucide-react';
 import StudyPanel from '../components/StudyPanel';
 import { QuestionTreasuryWidget } from '../components/QuestionTreasuryWidget';
 import { Button } from '../components/ui/button';
-import { AppData } from '../types';
+import { AppData, Batch, MCQ } from '../types';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { TagStatsWidget } from '../components/TagStatsWidget';
@@ -26,21 +26,21 @@ const BankDashboard: React.FC = () => {
   // const [activeFilters, setActiveFilters] = useState({});
 
   const filteredQuestions = useMemo(() => {
-    const allQuestionsWithBatchInfo = batches.flatMap(b => b.questions.map(q => ({
+    const allQuestionsWithBatchInfo = batches.flatMap((b: Batch) => b.questions.map((q: MCQ) => ({
         ...q,
         batchCreatedAt: b.createdAt,
     })));
 
-    let filtered = allQuestionsWithBatchInfo.filter(q =>
+    let filtered = allQuestionsWithBatchInfo.filter((q: MCQ) =>
       q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
       q.explanation.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     // TODO: Add logic for activeFilters here
 
-    const difficultyMap = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
+    const difficultyMap: any = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
 
-    filtered.sort((a, b) => {
+    filtered.sort((a: MCQ & { batchCreatedAt: string }, b: MCQ & { batchCreatedAt: string }) => {
         switch (sortOrder) {
             case 'date-asc':
                 return new Date(a.batchCreatedAt).getTime() - new Date(b.batchCreatedAt).getTime();

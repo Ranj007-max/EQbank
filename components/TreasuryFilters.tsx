@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAnalytics } from '../context/AnalyticsContext';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Batch } from '../types';
 import { Label } from './ui/label';
 import { Checkbox } from './ui/checkbox';
 import { MultiSelect } from './ui/MultiSelect';
@@ -14,10 +15,10 @@ interface TreasuryFiltersProps {
 export const TreasuryFilters: React.FC<TreasuryFiltersProps> = () => {
   const { statsBySubject, statsByPlatform, batches } = useAnalytics();
 
-  const availableSubjects = statsBySubject.map(s => ({ value: s.name, label: s.name }));
-  const availablePlatforms = statsByPlatform.map(p => ({ value: p.name, label: p.name }));
+  const availableSubjects = statsBySubject.map((s: { name: string }) => ({ value: s.name, label: s.name }));
+  const availablePlatforms = statsByPlatform.map((p: { name:string }) => ({ value: p.name, label: p.name }));
   // This is a simplified version. A better implementation would have chapters dependent on the selected subject.
-  const availableChapters = [...new Set(batches.map(b => b.chapter))].map(c => ({ value: c, label: c }));
+  const availableChapters = [...new Set(batches.map((b: Batch) => b.chapter))].map(c => ({ value: c, label: c }));
 
   // Placeholder state for filters
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);

@@ -83,6 +83,16 @@ export const updateQuestionNotes = async (batchId: string, questionId: string, n
     return updateQuestion(batchId, questionId, { notes });
 };
 
+export const updateBatch = async (updatedBatch: Batch): Promise<boolean> => {
+    const batches = await getBatches();
+    const batchIndex = batches.findIndex(b => b.id === updatedBatch.id);
+    if (batchIndex === -1) {
+        return false; // Batch not found
+    }
+    batches[batchIndex] = updatedBatch;
+    return saveBatches(batches);
+};
+
 export const recordAnswerAndUpdateSrs = async (batchId: string, questionId: string, isCorrect: boolean): Promise<boolean> => {
     const batches = await getBatches();
     const batchIndex = batches.findIndex(b => b.id === batchId);
@@ -155,6 +165,17 @@ export const getAppData = async (): Promise<AppData> => {
         getExamHistory(),
     ]);
     return { batches, studyHistory, examHistory };
+};
+
+export const exportData = async () => {
+    const data = await getAppData();
+    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
+        JSON.stringify(data, null, 2)
+    )}`;
+    const link = document.createElement("a");
+    link.href = jsonString;
+    link.download = `e-qbank-backup-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
 };
 
 export const importAppData = async (data: AppData): Promise<boolean> => {
@@ -308,3 +329,35 @@ export const getPerformanceOverTime = async () => {
         score: session.score,
     }));
 };
+
+export const getWeeklyGoalProgress = async () => {
+    const goal = await getGoal();
+    if (!goal || goal.type !== 'weeklyQuestions') {
+        return { count: 0, percentage: 0 };
+    }
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const [studyHistory, examHistory] = await Promise.all([getStudyHistory(), getExamHistory()]);
+
+    const questionsInLastWeek = [...studyHistory, ...examHistory]
+        .filter(session => new Date(session.createdAt) > sevenDaysAgo)
+        .reduce((total, session) => {
+            if ('config' in session && 'questionCount' in session.config) {
+                return total + session.config.questionCount;
+            }
+            if ('totalQuestions' in session) {
+                return total + session.totalQuestions;
+            }
+            return total;
+        }, 0);
+
+    return {
+        count: questionsInLastWeek,
+        percentage: goal.target > 0 ? Math.min(100, Math.round((questionsInLastWeek / goal.target) * 100)) : 0,
+    };
+};
+
+export const getStatsBySubject = () => getStatsByGrouping('subject');
+export const getStatsByPlatform = () => getStatsByGrouping('platform');

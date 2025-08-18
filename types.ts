@@ -1,4 +1,5 @@
 export interface MCQ {
+  batchId: string;
   id: string;
   question: string;
   options: string[];

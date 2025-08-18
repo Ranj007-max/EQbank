@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useExam } from '../context/ExamContext';
 import { useBatches } from '../context/BatchContext';
 import type { MCQ } from '../types';
-import { ChevronLeft, ChevronRight, LoaderCircle, Flag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LoaderCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter } from '../components/ui/card';
 import { useSound } from '../hooks/useSound';
@@ -32,7 +32,7 @@ const ExamSession: React.FC = () => {
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [isEndExamModalOpen, setIsEndExamModalOpen] = useState(false);
   const [isQuickReviewOpen, setIsQuickReviewOpen] = useState(false);
-  const [markedForReview, setMarkedForReview] = useState<string[]>([]);
+  const [markedForReview] = useState<string[]>([]);
   const playCorrectSound = useSound('/sounds/correct-ding.mp3');
 
   useEffect(() => {
@@ -83,15 +83,6 @@ const ExamSession: React.FC = () => {
     updateQuestion(currentQuestion.batchId, currentQuestion.id, {
       tags: { ...currentQuestion.tags, [tag]: !currentQuestion.tags[tag] },
     });
-  };
-
-  const toggleMarkForReview = () => {
-    if (!currentQuestion) return;
-    setMarkedForReview(prev =>
-      prev.includes(currentQuestion.id)
-        ? prev.filter(id => id !== currentQuestion.id)
-        : [...prev, currentQuestion.id]
-    );
   };
 
   if (!isExamActive || !currentQuestion || !examSession) {

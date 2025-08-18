@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { ExamSession, ExamQuestion } from '../types';
 import * as dataService from '../services/dataService';

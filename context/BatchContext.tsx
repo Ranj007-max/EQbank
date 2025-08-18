@@ -30,11 +30,12 @@ export const BatchProvider = ({ children }: { children: ReactNode }) => {
   }, [refreshBatches]);
 
   const addBatch = async (batchData: Omit<Batch, 'id' | 'createdAt'>) => {
+    const batchId = crypto.randomUUID();
     const newBatch: Batch = {
       ...batchData,
-      id: crypto.randomUUID(),
+      id: batchId,
       createdAt: new Date().toISOString(),
-      questions: batchData.questions || [], // ensure questions is not undefined
+      questions: batchData.questions.map(q => ({ ...q, batchId: batchId })) || [], // ensure questions is not undefined
     };
     await dataService.addBatch(newBatch);
     await refreshBatches(); // Re-fetch all batches to ensure state is in sync
