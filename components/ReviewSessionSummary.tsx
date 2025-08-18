@@ -2,7 +2,7 @@ import React from 'react';
 import { StudyQuestion } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { CheckCircle, XCircle } from 'lucide-react';
+
 
 interface ReviewSessionSummaryProps {
   sessionQuestions: StudyQuestion[];

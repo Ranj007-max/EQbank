@@ -95,3 +95,5 @@ export interface UserGoal {
   type: 'weeklyQuestions';
   target: number;
 }
+
+export type Tag = 'bookmarked' | 'hard' | 'revise' | 'mistaked';

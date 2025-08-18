@@ -1,10 +1,14 @@
 import * as React from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
+feat/revamp-review-section
+import { Check, ChevronsUpDown, X } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Button } from "./button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "./command";
-import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 import { Badge } from "./badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./dialog";
+import { Input } from "./input";
+import { Checkbox } from "./checkbox";
+import { Label } from "./label";
+
 
 export interface MultiSelectOption {
   value: string;
@@ -22,6 +26,9 @@ interface MultiSelectProps {
 const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
   ({ options, selected, onChange, className, placeholder = "Select options...", ...props }, ref) => {
     const [open, setOpen] = React.useState(false);
+ 
+    const [search, setSearch] = React.useState('');
+
 
     const handleSelect = (value: string) => {
       const newSelected = selected.includes(value)
@@ -30,9 +37,13 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
       onChange(newSelected);
     };
 
+feat/revamp-review-section
+    const filteredOptions = options.filter(option => option.label.toLowerCase().includes(search.toLowerCase()));
+
     return (
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+
           <Button
             ref={ref}
             variant="outline"
@@ -51,41 +62,53 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                     variant="secondary"
                     key={option!.value}
                     className="mr-1 mb-1"
-                    onClick={(e) => {
+ feat/revamp-review-section
+                    onClick={(e: React.MouseEvent) => {
+
                       e.stopPropagation();
                       handleSelect(option!.value);
                     }}
                   >
                     {option!.label}
+feat/revamp-review-section
+                    <X className="ml-1 h-3 w-3" />
+
                   </Badge>
                 ))}
             </div>
             <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full p-0">
-          <Command>
-            <CommandInput placeholder="Search..." />
-            <CommandEmpty>No options found.</CommandEmpty>
-            <CommandGroup>
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  onSelect={() => handleSelect(option.value)}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      selected.includes(option.value) ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {option.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </Command>
-        </PopoverContent>
-      </Popover>
+
+        </DialogTrigger>
+        <DialogContent className="p-0">
+            <DialogHeader className="p-4 border-b">
+                <DialogTitle>{placeholder}</DialogTitle>
+            </DialogHeader>
+            <div className="p-4">
+                <Input
+                    placeholder="Search..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="mb-4"
+                />
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {filteredOptions.map(option => (
+                        <div key={option.value} className="flex items-center space-x-2">
+                            <Checkbox
+                                id={`multiselect-${option.value}`}
+                                checked={selected.includes(option.value)}
+                                onCheckedChange={() => handleSelect(option.value)}
+                            />
+                            <Label htmlFor={`multiselect-${option.value}`} className="font-normal">
+                                {option.label}
+                            </Label>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </DialogContent>
+      </Dialog>
+
     );
   }
 );

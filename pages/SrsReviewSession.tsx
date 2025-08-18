@@ -12,15 +12,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
-import { Tag } from '../types';
+ feat/revamp-review-section
+import { Tag, StudyQuestion } from '../types';
 import { MultiSelect } from '../components/ui/MultiSelect';
+
+
 interface ReviewSettings {
   questionLimit: number;
   subjects: string[];
   tags: Tag[];
 }
 
-import { StudyQuestion } from '../types';
 
 const SrsReviewSession: React.FC = () => {
   const navigate = useNavigate();
@@ -41,14 +43,14 @@ const SrsReviewSession: React.FC = () => {
     tags: [],
   });
 
-  useEffect(() => {
-    if (currentQuestion) {
-      setCurrentNotes(currentQuestion.notes || '');
-    }
-  }, [currentQuestion]);
-
+ feat/revamp-review-section
   const availableSubjects = useMemo(() => statsBySubject.map(s => s.name), [statsBySubject]);
-  const availableTags = useMemo(() => Object.keys(tagStats).filter(t => tagStats[t as Tag] > 0) as Tag[], [tagStats]);
+
+  const availableTags = useMemo((): Tag[] => {
+    const tags: Tag[] = ['bookmarked', 'hard', 'revise', 'mistaked'];
+    return tags.filter(tag => tagStats[tag] > 0);
+  }, [tagStats]);
+
 
   const questions = useMemo(() => {
     let filteredQuestions = dueReviewQuestions || [];
@@ -61,6 +63,7 @@ const SrsReviewSession: React.FC = () => {
       });
     }
 
+
     if (reviewSettings.tags.length > 0) {
       filteredQuestions = filteredQuestions.filter(q => {
         return reviewSettings.tags.every(tag => q.tags[tag]);
@@ -71,9 +74,16 @@ const SrsReviewSession: React.FC = () => {
 
   }, [dueReviewQuestions, reviewSettings, getBatchById]);
 
-  const currentQuestion = questions[currentQuestionIndex];
+  const currentQuestion = sessionStarted ? sessionQuestions[currentQuestionIndex] : questions[currentQuestionIndex];
+
   const selectedOption = currentQuestion ? selectedAnswers[currentQuestion.id] : undefined;
   
+  useEffect(() => {
+    if (currentQuestion) {
+      setCurrentNotes(currentQuestion.notes || '');
+    }
+  }, [currentQuestion]);
+
   const handleSelectOption = (option: string) => {
     if (selectedOption) return; 
 
@@ -96,7 +106,7 @@ const SrsReviewSession: React.FC = () => {
     setSelectedAnswers({});
     setSessionEnded(false);
     setSessionStarted(true);
-    // Note: sessionQuestions remains the same
+
   };
 
   const toggleTag = (tag: 'bookmarked' | 'hard') => {
@@ -111,7 +121,7 @@ const SrsReviewSession: React.FC = () => {
   };
   
   const goToNext = () => {
-    if (currentQuestionIndex < questions.length - 1) {
+    if (currentQuestionIndex < sessionQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
       setSessionEnded(true);
@@ -199,12 +209,11 @@ const SrsReviewSession: React.FC = () => {
   }
 
   if (!currentQuestion) {
-      // Should not happen if sessionStarted is true and questions.length > 0
-      return (
-        <div className="animate-fade-in max-w-2xl mx-auto text-center">
-             <p className="text-muted-foreground mb-8">Loading question...</p>
-        </div>
-      )
+    return (
+      <div className="animate-fade-in max-w-2xl mx-auto text-center">
+           <p className="text-muted-foreground mb-8">Loading question...</p>
+      </div>
+    )
   }
 
   const batchForTags = getBatchById(currentQuestion.batchId);
@@ -302,7 +311,11 @@ const SrsReviewSession: React.FC = () => {
                   placeholder="Write your notes here..."
                 />
                 <Button onClick={() => {
-                  updateQuestionNotes(currentQuestion.batchId, currentQuestion.id, currentNotes);
+                    
+                  if(currentQuestion) {
+                    updateQuestionNotes(currentQuestion.batchId, currentQuestion.id, currentNotes);
+                  }
+
                   setIsNotesModalOpen(false);
                 }}>Save Notes</Button>
               </DialogContent>
