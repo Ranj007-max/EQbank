@@ -31,11 +31,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  if (isExamMode) {
+    return <div className="bg-background text-foreground h-screen">{children}</div>;
+  }
+
   return (
     <div className="bg-background text-foreground min-h-screen">
       <div className="grid lg:grid-cols-[minmax(250px,20%)_1fr] h-screen">
         {/* Sidebar */}
-        <aside className={`fixed lg:relative inset-y-0 left-0 z-50 w-full max-w-[280px] lg:max-w-none lg:w-auto transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out bg-black/10 backdrop-blur-lg border-r border-white/10 flex flex-col`}>
+        <aside className={`fixed lg:relative inset-y-0 left-0 z-50 w-full max-w-[280px] lg:max-w-none lg:w-auto transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out bg-black/10 backdrop-blur-lg border-r border-white/10 flex-col ${isExamMode ? 'hidden lg:flex' : 'flex'}`}>
           <div className="flex items-center gap-2.5 px-4 h-20 border-b border-white/10">
               <BookOpenCheck className="h-7 w-7 text-primary" />
               <h1 className="text-xl font-bold tracking-tighter">E-Qbank</h1>
@@ -76,31 +80,29 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </aside>
 
         {/* Main Content */}
-        <div className="flex flex-col lg:col-start-2 overflow-hidden">
+        <div className={`flex flex-col ${isExamMode ? 'col-span-2' : 'lg:col-start-2'} overflow-hidden`}>
           {/* Top Bar */}
-          {!isExamMode && (
-            <header className="sticky top-0 z-40 h-20 bg-background/80 backdrop-filter backdrop-blur-lg border-b border-white/10 flex items-center justify-between px-6 lg:px-10">
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" className="lg:hidden" onClick={toggleSidebar}>
-                  <Menu />
+          <header className="sticky top-0 z-40 h-20 bg-background/80 backdrop-filter backdrop-blur-lg border-b border-white/10 flex items-center justify-between px-6 lg:px-10">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" className="lg:hidden" onClick={toggleSidebar}>
+                <Menu />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Go back">
+                <ChevronLeft />
+              </Button>
+            </div>
+            <div className="flex-1 max-w-md mx-auto">
+              <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input placeholder="Global Search..." className="pl-10 neumorphic-input" />
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+                <Button variant="ghost" size="icon" aria-label="Profile">
+                    <User />
                 </Button>
-                <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Go back">
-                  <ChevronLeft />
-                </Button>
-              </div>
-              <div className="flex-1 max-w-md mx-auto">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input placeholder="Global Search..." className="pl-10 neumorphic-input" />
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                  <Button variant="ghost" size="icon" aria-label="Profile">
-                      <User />
-                  </Button>
-              </div>
-            </header>
-          )}
+            </div>
+          </header>
 
           <main className="flex-1 overflow-y-auto p-6 lg:p-10">
               {children}
