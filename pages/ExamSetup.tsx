@@ -1,155 +1,107 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
-import { Zap } from 'lucide-react';
 import { ExamQuestion } from '../types';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardFooter } from '../components/ui/card';
-import { Checkbox } from '../components/ui/checkbox';
-import { Label } from '../components/ui/label';
-import { Input } from '../components/ui/input';
 import { ExamHistoryTable } from '../components/ExamHistoryTable';
+import CreateExamPanel from '../components/CreateExamPanel';
+import { useLocalStorage } from '../hooks/useLocalStorage';
+import { debounce } from '../lib/utils';
 
-const QUESTION_STATUSES = {
-  unattempted: 'Unattempted',
-  mistakes: 'Mistakes Only',
-  bookmarked: 'Bookmarked',
-  hard: 'Hard',
-  revise: 'Revise',
-};
+export interface ExamConfig {
+  examType: string;
+  subjects: string[];
+  chapters: string[];
+  difficulty: number;
+  numQuestions: number;
+  tags: string[];
+  name?: string;
+}
 
 const ExamSetup: React.FC = () => {
   const navigate = useNavigate();
   const { batches } = useAnalytics();
-  
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(['unattempted']);
-  const [numQuestions, setNumQuestions] = useState(25);
-  
+  const [presets, setPresets] = useLocalStorage<ExamConfig[]>('examPresets', []);
+
+  const [config, setConfig] = useState<ExamConfig>({
+    examType: 'full-mock',
+    subjects: [],
+    chapters: [],
+    difficulty: 50,
+    numQuestions: 50,
+    tags: [],
+  });
+
   const allQuestions = useMemo((): ExamQuestion[] => 
     batches.flatMap(batch => 
-      batch.questions.map(q => ({
-        ...q, 
-        batchId: batch.id, 
-        subject: batch.subject, 
-        platform: batch.platform
-      }))
+      batch.questions.map(q => ({ ...q, batchId: batch.id, subject: batch.subject }))
     ), [batches]);
 
   const availableSubjects = useMemo(() => [...new Set(batches.map(b => b.subject))], [batches]);
-  const availablePlatforms = useMemo(() => [...new Set(batches.map(b => b.platform))], [batches]);
 
   const filteredQuestions = useMemo(() => {
     return allQuestions.filter(q => {
-      const subjectMatch = selectedSubjects.length === 0 || selectedSubjects.includes(q.subject);
-      const platformMatch = selectedPlatforms.length === 0 || selectedPlatforms.includes(q.platform);
-      
-      if (!subjectMatch || !platformMatch) return false;
-      if (selectedStatuses.length === 0) return true;
+      const subjectMatch = config.subjects.length === 0 || config.subjects.includes(q.subject);
+      if (!subjectMatch) return false;
 
-      return selectedStatuses.some(status => {
-        if (status === 'bookmarked') return q.tags.bookmarked;
-        if (status === 'hard') return q.tags.hard;
-        if (status === 'revise') return q.tags.revise;
-        if (status === 'mistakes') return q.lastAttemptCorrect === false;
-        if (status === 'unattempted') return q.lastAttemptCorrect === null;
+      const tagMatch = config.tags.length === 0 || config.tags.some(tag => {
+        if (tag === 'Image-Based') return q.imageUrl !== null;
+        if (tag === 'Unattempted') return q.lastAttemptCorrect === null;
+        if (tag === 'Hard') return q.tags?.hard;
+        // High-Yield is not a direct property, so we can't filter by it here
         return false;
       });
+      if(!tagMatch) return false;
+
+      return true;
     });
-  }, [allQuestions, selectedSubjects, selectedPlatforms, selectedStatuses]);
-  
-  const handleToggle = (setter: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
-    setter(prev => prev.includes(value) ? prev.filter(item => item !== value) : [...prev, value]);
-  };
-  
+  }, [allQuestions, config]);
+
   const startExam = () => {
     const sessionQuestions = filteredQuestions
-      .sort(() => 0.5 - Math.random()) // Shuffle
-      .slice(0, numQuestions);
+      .sort(() => 0.5 - Math.random())
+      .slice(0, config.numQuestions);
       
     if (sessionQuestions.length > 0) {
-      const config = {
-        subjects: selectedSubjects.length > 0 ? selectedSubjects : ['All'],
-        platforms: selectedPlatforms.length > 0 ? selectedPlatforms : ['All'],
-        statuses: selectedStatuses.length > 0 ? selectedStatuses.map(s => QUESTION_STATUSES[s as keyof typeof QUESTION_STATUSES]) : ['Any'],
-        questionCount: sessionQuestions.length,
-      };
       navigate('/exam/session', { state: { questions: sessionQuestions, config } });
     } else {
-      alert("No questions match your criteria. Please broaden your selection.");
+      alert("No questions match your criteria.");
     }
   };
 
+  const handleConfigChange = (newConfig: Partial<ExamConfig>) => {
+    setConfig(prev => ({ ...prev, ...newConfig }));
+  };
+
+  const debouncedSetConfig = useCallback(debounce(handleConfigChange, 300), []);
+
+  const savePreset = () => {
+    const name = prompt("Enter a name for this preset:");
+    if (name) {
+      setPresets([...presets, { ...config, name }]);
+      alert(`Preset "${name}" saved!`);
+    }
+  };
+
+  const loadPreset = (preset: ExamConfig) => {
+    setConfig(preset);
+  };
+
   return (
-    <div className="max-w-4xl mx-auto animate-fade-in">
+    <div className="max-w-4xl mx-auto animate-fade-in py-8">
         <div className="text-center mb-8">
             <h1 className="text-5xl font-bold gradient-text">Create New Exam</h1>
             <p className="text-muted-foreground mt-2">Customize your exam by selecting from the options below.</p>
         </div>
 
-        <Card>
-            <CardContent className="p-8 space-y-8">
-                <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-foreground">Subjects</h3>
-                    <div className="flex flex-wrap gap-2">
-                        {availableSubjects.map(subject => (
-                        <Button key={subject} variant={selectedSubjects.includes(subject) ? 'default' : 'outline'} onClick={() => handleToggle(setSelectedSubjects, subject)}>{subject}</Button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-foreground">Platforms</h3>
-                    <div className="flex flex-wrap gap-2">
-                        {availablePlatforms.map(platform => (
-                        <Button key={platform} variant={selectedPlatforms.includes(platform) ? 'default' : 'outline'} onClick={() => handleToggle(setSelectedPlatforms, platform)}>{platform}</Button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-foreground">Question Status</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {Object.entries(QUESTION_STATUSES).map(([key, value]) => (
-                        <div key={key} className="flex items-center space-x-2 p-3 rounded-lg border bg-background has-[:checked]:bg-accent has-[:checked]:border-primary/50">
-                            <Checkbox id={key} checked={selectedStatuses.includes(key)} onCheckedChange={() => handleToggle(setSelectedStatuses, key)} />
-                            <Label htmlFor={key} className="font-medium cursor-pointer">{value}</Label>
-                        </div>
-                        ))}
-                    </div>
-                </div>
-                
-                <div className="space-y-3">
-                    <Label htmlFor="num-questions" className="text-lg font-semibold text-foreground">Number of Questions</Label>
-                    <div className="flex items-center gap-4">
-                        <Input
-                            id="num-questions"
-                            type="number"
-                            min="1"
-                            max={filteredQuestions.length}
-                            value={numQuestions}
-                            onChange={e => setNumQuestions(Math.max(1, Math.min(filteredQuestions.length, Number(e.target.value))))}
-                            className="w-32"
-                        />
-                        <span className="text-muted-foreground text-sm">
-                            / {filteredQuestions.length} available
-                        </span>
-                    </div>
-                </div>
-            </CardContent>
-            <CardFooter>
-                 <Button 
-                    onClick={startExam}
-                    disabled={filteredQuestions.length === 0}
-                    size="lg"
-                    className="w-full text-lg font-bold"
-                >
-                    <Zap size={22} className="mr-3" />
-                    Start Exam ({Math.min(numQuestions, filteredQuestions.length)} Questions)
-                </Button>
-            </CardFooter>
-        </Card>
+        <CreateExamPanel
+          config={config}
+          onConfigChange={debouncedSetConfig}
+          availableSubjects={availableSubjects.map(s => ({ value: s, label: s }))}
+          startExam={startExam}
+          availableQuestions={filteredQuestions.length}
+          savePreset={savePreset}
+          filteredQuestions={filteredQuestions}
+        />
 
         <div className="mt-16">
             <h2 className="text-3xl font-bold text-center mb-8 gradient-text">Recent Exams</h2>
