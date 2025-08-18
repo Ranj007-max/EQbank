@@ -1,5 +1,7 @@
 import * as React from "react";
+
 import { ChevronsUpDown, X } from "lucide-react";
+
 import { cn } from "../../lib/utils";
 import { Button } from "./button";
 import { Badge } from "./badge";
@@ -74,7 +76,9 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                 <DialogTitle>{placeholder}</DialogTitle>
             </DialogHeader>
             <div className="p-4">
+
                 <Input
+
                     placeholder="Search..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -83,7 +87,9 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                     {filteredOptions.map(option => (
                         <div key={option.value} className="flex items-center space-x-2">
+
                             <Checkbox
+
                                 id={`multiselect-${option.value}`}
                                 checked={selected.includes(option.value)}
                                 onCheckedChange={() => handleSelect(option.value)}
@@ -103,4 +109,6 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
 
 MultiSelect.displayName = "MultiSelect";
 
+
 export { MultiSelect };
+
