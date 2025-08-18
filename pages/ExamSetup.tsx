@@ -48,16 +48,6 @@ const ExamSetup: React.FC = () => {
     return [...new Set(chapters)];
   }, [batches, config.subjects]);
 
-  const availableChapters = useMemo(() => {
-    if (config.subjects.length === 0) {
-      return [];
-    }
-    const chapters = batches
-      .filter(b => config.subjects.includes(b.subject))
-      .map(b => b.chapter);
-    return [...new Set(chapters)];
-  }, [batches, config.subjects]);
-
   const filteredQuestions = useMemo(() => {
     return allQuestions.filter(q => {
       const subjectMatch = config.subjects.length === 0 || config.subjects.includes(q.subject);
