@@ -96,27 +96,30 @@ const ExamSession: React.FC = () => {
 
         if (location.state?.questions) {
           const initialState: SessionState = {
-        questions: location.state.questions,
-        config: location.state.config,
-        answers: {},
-        markedForReview: [],
-        visited: [location.state.questions[0]?.id],
-        startTime: Date.now(),
-      };
-      setSessionState(initialState);
-      setCurrentIndex(0);
-    } else if (savedSession) {
-      try {
-        setSessionState(JSON.parse(savedSession));
-        if (savedIndex) setCurrentIndex(Number(savedIndex));
-      } catch (e) {
-        console.error("Failed to parse saved exam session:", e);
-        sessionStorage.clear();
-        navigate('/exams');
+            questions: location.state.questions,
+            config: location.state.config,
+            answers: {},
+            markedForReview: [],
+            visited: [location.state.questions[0]?.id],
+            startTime: Date.now(),
+          };
+          setSessionState(initialState);
+          setCurrentIndex(0);
+        } else if (savedSession) {
+          try {
+            setSessionState(JSON.parse(savedSession));
+            if (savedIndex) setCurrentIndex(Number(savedIndex));
+          } catch (e) {
+            console.error("Failed to parse saved exam session:", e);
+            sessionStorage.clear();
+            navigate('/exams');
+          }
+        } else {
+          navigate('/exams');
+        }
       }
-    } else {
-      navigate('/exams');
     }
+    resumeSession();
   }, [location.state, navigate]);
 
   useEffect(() => {
