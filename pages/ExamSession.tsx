@@ -160,8 +160,7 @@ const ExamSession: React.FC = () => {
         <div className="relative">
           <Button variant="ghost" onClick={() => setIsMenuOpen(prev => !prev)} className="btn-premium-label">
             Menu
-
-             </Button>
+          </Button>
           {isMenuOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-xl z-10 border">
               <ul className="py-1">

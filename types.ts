@@ -9,7 +9,12 @@ export interface MCQ {
     hard: boolean;
     revise: boolean;
     mistaked: boolean;
+    highYield: boolean;
+    caseBased: boolean;
+    pyq: boolean; // Past Year Question
   };
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  questionType: 'MCQ' | 'Assertion-Reason' | 'Case' | 'Image-based';
   notes?: string;
   lastAttemptCorrect: boolean | null; // null: unattempted, true: correct, false: incorrect
   srsLevel: number;
@@ -97,4 +102,4 @@ export interface UserGoal {
   target: number;
 }
 
-export type Tag = 'bookmarked' | 'hard' | 'revise' | 'mistaked';
+export type Tag = 'bookmarked' | 'hard' | 'revise' | 'mistaked' | 'highYield' | 'caseBased' | 'pyq';
