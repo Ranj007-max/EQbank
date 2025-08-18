@@ -1,24 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Button } from './ui/button';
 import QuestionDrillDownView from './QuestionDrillDownView';
-import { useAnalytics } from '../context/AnalyticsContext';
+import { useBatches } from '../context/BatchContext';
 import { MCQ } from '../types';
 
 const COLORS = ['#00A8FF', '#00FF85', '#FFC700', '#FF5733', '#C70039'];
 
 const TreasuryContent = () => {
   const [activeTab, setActiveTab] = useState('subject');
-  const { statsBySubject, statsByPlatform, batches } = useAnalytics();
+  const { batches } = useBatches();
+
+  const statsBySubject = useMemo(() => {
+    const stats: { [key: string]: { name: string; total: number; attempted: number } } = {};
+    batches.forEach(batch => {
+      const key = batch.subject;
+      if (!stats[key]) stats[key] = { name: key, total: 0, attempted: 0 };
+      stats[key].total += batch.questions.length;
+      stats[key].attempted += batch.questions.filter(q => q.lastAttemptCorrect !== null).length;
+    });
+    return Object.values(stats).sort((a, b) => b.total - a.total);
+  }, [batches]);
+
+  const statsByPlatform = useMemo(() => {
+    const stats: { [key: string]: { name: string; total: number; attempted: number } } = {};
+    batches.forEach(batch => {
+      const key = batch.platform;
+      if (!stats[key]) stats[key] = { name: key, total: 0, attempted: 0 };
+      stats[key].total += batch.questions.length;
+      stats[key].attempted += batch.questions.filter(q => q.lastAttemptCorrect !== null).length;
+    });
+    return Object.values(stats).sort((a, b) => b.total - a.total);
+  }, [batches]);
 
   const getQuestionsBySubject = (subject: string): MCQ[] => {
-    const relevantBatches = batches.filter(b => b.subject === subject);
-    return relevantBatches.flatMap(b => b.questions);
+    return batches.filter(b => b.subject === subject).flatMap(b => b.questions);
   }
 
   const getQuestionsByPlatform = (platform: string): MCQ[] => {
-    const relevantBatches = batches.filter(b => b.platform === platform);
-    return relevantBatches.flatMap(b => b.questions);
+    return batches.filter(b => b.platform === platform).flatMap(b => b.questions);
   }
 
   return (

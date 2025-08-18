@@ -1,13 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAnalytics } from '../context/AnalyticsContext';
+import { useBatches } from '../context/BatchContext';
+import * as dataService from '../services/dataService';
+import { StudyQuestion } from '../types';
 import { BrainCircuit, History, BookCopy } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../components/ui/card';
 import { ExamHistoryTable } from '../components/ExamHistoryTable';
 
 const ReviewHub: React.FC = () => {
-  const { dueReviewQuestions, batches } = useAnalytics();
+  const { batches } = useBatches();
+  const [dueReviewQuestions, setDueReviewQuestions] = useState<StudyQuestion[]>([]);
+
+  useEffect(() => {
+    const fetchDueQuestions = async () => {
+      const questions = await dataService.getDueReviewQuestions();
+      setDueReviewQuestions(questions);
+    };
+    fetchDueQuestions();
+  }, []);
 
   return (
     <div className="animate-fade-in space-y-12">
@@ -37,7 +48,7 @@ const ReviewHub: React.FC = () => {
           <p className="text-muted-foreground mb-6">
             questions are due for review.
           </p>
-          <Button size="lg" asChild className="btn-gradient">
+          <Button size="lg" asChild className="btn-gradient" disabled={dueReviewQuestions.length === 0}>
             <Link to="/srs-review">Start SRS Review</Link>
           </Button>
         </CardContent>
