@@ -22,7 +22,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
       height={size}
     >
       <circle
-        className="text-muted"
+        className="text-gray-300 dark:text-gray-700"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         fill="transparent"
@@ -31,7 +31,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
         cy={size / 2}
       />
       <circle
-        className="text-primary transition-all duration-500 ease-in-out"
+        className="text-blue-500"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeDasharray={circumference}
@@ -41,6 +41,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
         r={radius}
         cx={size / 2}
         cy={size / 2}
+        style={{ transition: 'stroke-dashoffset 0.5s ease-in-out' }}
       />
     </svg>
   );

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Slab:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -66,7 +66,7 @@
   }
   body {
     @apply bg-background text-foreground transition-colors duration-500;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Inter', sans-serif;
     background-color: hsl(var(--background));
   }
 
@@ -146,4 +146,32 @@
     mask-composite: exclude;
     pointer-events: none;
   }
+}
+
+@keyframes slide-in-fade {
+  from {
+    opacity: 0;
+    transform: translateX(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-question-change {
+  animation: slide-in-fade 0.3s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+  }
+}
+
+.animate-ripple {
+  animation: ripple 0.4s linear;
 }
