@@ -62,9 +62,10 @@ const ExamSetup: React.FC = () => {
       if (!chapterMatch) return false;
 
       const tagMatch = config.tags.length === 0 || config.tags.some(tag => {
-        if (tag === 'Bookmark') return q.tags?.bookmarked;
-        if (tag === 'Hard') return q.tags?.hard;
-        if (tag === 'Revise') return q.tags?.revise;
+        const questionTags = q.tags || [];
+        if (tag === 'Bookmark') return questionTags.includes('bookmarked');
+        if (tag === 'Hard') return questionTags.includes('hard');
+        if (tag === 'Revise') return questionTags.includes('revise');
         return false;
       });
       if(!tagMatch) return false;

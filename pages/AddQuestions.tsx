@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { useBatches } from '../context/BatchContext';
+import { useUI } from '../context/UIContext';
 import { MBBS_SUBJECTS, PLATFORMS } from '../data/constants';
 import { Batch, ParsedMCQ, MCQ } from '../types';
 import { ArrowLeft, LoaderCircle, CheckCircle, Wand, Edit, PlusCircle } from 'lucide-react';
@@ -11,11 +12,13 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
+import { FilterButtonGroup } from '../components/ui/FilterButtonGroup';
 import { cn } from '../lib/utils';
 
 const AddQuestions: React.FC = () => {
   const navigate = useNavigate();
   const { addBatch } = useBatches();
+  const { state: uiState, dispatch } = useUI();
 
   const [addMode, setAddMode] = useState<'ai' | 'manual'>('ai');
 
@@ -79,6 +82,11 @@ const AddQuestions: React.FC = () => {
     const questionsToSave = addMode === 'ai' ? parsedMCQs : manualMCQs;
     if (!questionsToSave || questionsToSave.length === 0) return;
 
+    const tagPrefix = 'add-question:';
+    const selectedTags = uiState.selectedTagIds
+      .filter(id => id.startsWith(tagPrefix))
+      .map(id => id.replace(tagPrefix, ''));
+
     const batchData: Omit<Batch, 'id' | 'createdAt'> = {
       name: `${subject} - ${chapter}`,
       subject,
@@ -90,15 +98,7 @@ const AddQuestions: React.FC = () => {
         ...mcq,
         difficulty: 'Medium',
         questionType: 'MCQ',
-        tags: {
-            bookmarked: false,
-            hard: false,
-            revise: false,
-            mistaked: false,
-            highYield: false,
-            caseBased: false,
-            pyq: false
-        },
+        tags: selectedTags,
         lastAttemptCorrect: null,
         srsLevel: 0,
         nextReviewDate: new Date().toISOString(),
@@ -106,6 +106,14 @@ const AddQuestions: React.FC = () => {
     };
 
     addBatch(batchData);
+
+    // Clear the tags from context after saving
+    const clearedState = {
+        ...uiState,
+        selectedTagIds: uiState.selectedTagIds.filter(id => !id.startsWith(tagPrefix)),
+    };
+    dispatch({ type: 'SET_STATE', payload: clearedState });
+
     navigate('/bank');
   };
 
@@ -228,7 +236,15 @@ const AddQuestions: React.FC = () => {
     </Card>
   );
 
-  const renderTopForm = () => (
+  const renderTopForm = () => {
+    const commonTagOptions = [
+      { id: 'high-yield', label: 'High Yield' },
+      { id: 'pyq', label: 'PYQ' },
+      { id: 'bookmarked', label: 'Bookmark All' },
+      { id: 'image-based', label: 'Image Based' },
+    ];
+
+    return (
     <Card className="glass-card glow-border">
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
              <div className="space-y-2">
@@ -253,9 +269,13 @@ const AddQuestions: React.FC = () => {
                     </SelectContent>
                 </Select>
             </div>
+            <div className="md:col-span-3">
+                <FilterButtonGroup title="Common Tags" options={commonTagOptions} tagGroup="add-question" />
+            </div>
         </CardContent>
     </Card>
-  )
+    );
+  };
 
   const showPreview = (addMode === 'ai' && parsedMCQs && parsedMCQs.length > 0) || (addMode === 'manual' && manualMCQs.length > 0);
 

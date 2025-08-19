@@ -8,6 +8,7 @@ import { BatchProvider } from './context/BatchContext';
 import { ExamProvider } from './context/ExamContext';
 import { StudyProvider } from './context/StudyContext';
 import { HLPEProvider } from './context/HLPEContext';
+import { UIProvider } from './context/UIContext';
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -33,7 +34,9 @@ root.render(
           <ExamProvider>
             <StudyProvider>
               <HLPEProvider>
-                <App />
+                <UIProvider>
+                  <App />
+                </UIProvider>
               </HLPEProvider>
             </StudyProvider>
           </ExamProvider>

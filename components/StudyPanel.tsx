@@ -4,7 +4,6 @@ import { useAnalytics } from '../context/AnalyticsContext';
 import { Zap } from 'lucide-react';
 import { Batch, MCQ, StudyQuestion } from '../types';
 import { Button } from './ui/button';
-import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import { MultiSelect } from './ui/MultiSelect';
 import { Input } from './ui/input';
@@ -71,9 +70,10 @@ const StudyPanel: React.FC<StudyPanelProps> = ({ isOpen, onOpenChange }) => {
       if (selectedStatuses.length === 0) return true;
 
       return selectedStatuses.some(status => {
-        if (status === 'bookmarked') return q.tags.bookmarked;
-        if (status === 'hard') return q.tags.hard;
-        if (status === 'revise') return q.tags.revise;
+        const tags = q.tags || [];
+        if (status === 'bookmarked') return tags.includes('bookmarked');
+        if (status === 'hard') return tags.includes('hard');
+        if (status === 'revise') return tags.includes('revise');
         if (status === 'mistakes') return q.lastAttemptCorrect === false;
         if (status === 'unattempted') return q.lastAttemptCorrect === null;
         return false;
@@ -151,12 +151,11 @@ const StudyPanel: React.FC<StudyPanelProps> = ({ isOpen, onOpenChange }) => {
 
             <div className="space-y-2">
               <Label>Question Status</Label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-wrap gap-2">
                 {Object.entries(QUESTION_STATUSES).map(([key, value]) => (
-                    <div key={key} className="flex items-center space-x-2 p-2 rounded-md border bg-background has-[:checked]:bg-accent has-[:checked]:border-primary/50">
-                        <Checkbox id={key} checked={selectedStatuses.includes(key)} onCheckedChange={() => handleToggle(setSelectedStatuses, key)} />
-                        <Label htmlFor={key} className="text-sm font-medium leading-none cursor-pointer">{value}</Label>
-                    </div>
+                    <Button key={key} variant="neumorphic" size="sm" isSelected={selectedStatuses.includes(key)} onClick={() => handleToggle(setSelectedStatuses, key)}>
+                        {value}
+                    </Button>
                 ))}
               </div>
             </div>

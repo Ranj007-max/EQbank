@@ -5,15 +5,11 @@ export interface MCQ {
   options: string[];
   answer: string;
   explanation: string;
-  tags: {
-    bookmarked: boolean;
-    hard: boolean;
-    revise: boolean;
-    mistaked: boolean;
-    highYield: boolean;
-    caseBased: boolean;
-    pyq: boolean; // Past Year Question
-  };
+  /**
+   * Flexible tags for categorization, e.g., ['anatomy', 'hard', 'high-yield']
+   * This replaces the old boolean-based tag object.
+   */
+  tags: string[];
   difficulty: 'Easy' | 'Medium' | 'Hard';
   questionType: 'MCQ' | 'Assertion-Reason' | 'Case' | 'Image-based';
   imageURL?: string;
@@ -115,5 +111,3 @@ export interface UserMetrics {
   userElo: number; // User's current Elo rating
   // Can be extended with other metrics like learning velocity, etc.
 }
-
-export type Tag = 'bookmarked' | 'hard' | 'revise' | 'mistaked' | 'highYield' | 'caseBased' | 'pyq';
