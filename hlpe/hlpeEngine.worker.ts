@@ -153,8 +153,9 @@ const clusterErrors = (): ErrorCluster[] | undefined => {
             const timeTaken = currentState.examHistory.find(e => e.id === attempt.questionData.batchId)?.timeTaken || 30;
             const normalizedTime = timeTaken / maxTime;
             let difficultyScore = 0;
-            if (attempt.questionData.tags.hard) difficultyScore += 0.3;
-            if (attempt.questionData.tags.caseBased) difficultyScore += 0.2;
+            const tags = attempt.questionData.tags || [];
+            if (tags.includes('hard')) difficultyScore += 0.3;
+            if (tags.includes('case-based')) difficultyScore += 0.2;
             if (attempt.questionData.questionType !== 'MCQ') difficultyScore += 0.1;
 
             return {

@@ -29,10 +29,14 @@ const BatchReview: React.FC = () => {
     setFlippedCards(prev => ({ ...prev, [mcqId]: !prev[mcqId] }));
   };
 
-  const toggleTag = (mcqId: string, tag: keyof MCQ['tags']) => {
+  const toggleTag = (mcqId: string, tag: string) => {
     const updatedQuestions = batch.questions.map((q: MCQ) => {
       if (q.id === mcqId) {
-        return { ...q, tags: { ...q.tags, [tag]: !q.tags[tag] } };
+        const currentTags = q.tags || [];
+        const newTags = currentTags.includes(tag)
+          ? currentTags.filter(t => t !== tag)
+          : [...currentTags, tag];
+        return { ...q, tags: newTags };
       }
       return q;
     });
@@ -120,9 +124,9 @@ const BatchReview: React.FC = () => {
                                 <EyeOff size={16} className="mr-2"/> Hide Answer
                             </Button>
                             <div className="flex items-center gap-2">
-                                <Button variant="ghost" onClick={() => toggleTag(mcq.id, 'bookmarked')} className={cn("btn-premium-label", mcq.tags.bookmarked && "underline !text-yellow-400")}>Bookmark</Button>
-                                <Button variant="ghost" onClick={() => toggleTag(mcq.id, 'hard')} className={cn("btn-premium-label", mcq.tags.hard && "underline !text-red-500")}>Mark as Hard</Button>
-                                <Button variant="ghost" onClick={() => toggleTag(mcq.id, 'revise')} className={cn("btn-premium-label", mcq.tags.revise && "underline !text-blue-400")}>Revise Later</Button>
+                                <Button variant="neumorphic" size="sm" onClick={() => toggleTag(mcq.id, 'bookmarked')} isSelected={(mcq.tags || []).includes('bookmarked')}>Bookmark</Button>
+                                <Button variant="neumorphic" size="sm" onClick={() => toggleTag(mcq.id, 'hard')} isSelected={(mcq.tags || []).includes('hard')} isDestructive={(mcq.tags || []).includes('hard')}>Mark as Hard</Button>
+                                <Button variant="neumorphic" size="sm" onClick={() => toggleTag(mcq.id, 'revise')} isSelected={(mcq.tags || []).includes('revise')}>Revise Later</Button>
                             </div>
                         </CardFooter>
                     </Card>
