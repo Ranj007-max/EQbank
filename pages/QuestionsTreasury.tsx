@@ -2,7 +2,8 @@ import { Search, Download } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'; // HLPE
-import TreasuryFilterSidebar, { TreasuryFilters } from '../components/TreasuryFilterSidebar';
+import PremiumFilterPanel from '../components/PremiumFilterPanel';
+import { TreasuryFilters } from '../components/PremiumFilterPanel';
 import TreasuryContent from '../components/TreasuryContent';
 import { useBatches } from '../context/BatchContext';
 import { useHLPE } from '../context/HLPEContext'; // HLPE
@@ -163,10 +164,9 @@ const QuestionsTreasury: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
         <aside className="lg:col-span-1 lg:sticky lg:top-24 space-y-6">
-          <TreasuryFilterSidebar
+          <PremiumFilterPanel
             filters={filters}
             onFiltersChange={handleFiltersChange}
-            onApply={() => {}}
             onReset={handleResetFilters}
             availableChapters={availableChapters}
           />

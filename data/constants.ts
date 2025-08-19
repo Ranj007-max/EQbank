@@ -28,3 +28,13 @@ export const PLATFORMS = [
   "eGurukul",
   "Other"
 ];
+
+export const TAGS = [
+  "Bookmark",
+  "Hard",
+  "Revise",
+  "High-Yield",
+  "Image-Based",
+  "Previous Year",
+  "Concept"
+];
