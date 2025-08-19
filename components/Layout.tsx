@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { BookOpenCheck, Sun, Moon, LayoutDashboard, Library, BrainCircuit, PencilRuler, Search, ChevronLeft, User, Menu, PanelLeftClose } from 'lucide-react';
+
+import { useState, useEffect } from 'react';
+import { BookOpenCheck, Sun, Moon, LayoutDashboard, Library, BrainCircuit, PencilRuler, Plus, Minus, Search, ChevronLeft, User, Menu, PanelLeftClose } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { Button } from './ui/button';
 import { NavItem } from './NavItem';
@@ -25,6 +26,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
 
   const isExamMode = location.pathname.startsWith('/exam/session');
+  const isBankPage = location.pathname.startsWith('/bank');
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
