@@ -1,24 +1,13 @@
 import { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
-import { Tag, MCQ } from '../types';
+import { MCQ } from '../types';
 import { QuestionItem } from '../components/QuestionItem';
 import { Button } from '../components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
-const tagConfig: { [key in Tag]: { label: string } } = {
-  bookmarked: { label: 'Bookmarked' },
-  hard: { label: 'Hard' },
-  revise: { label: 'Revise' },
-  mistaked: { label: 'Mistaked' },
-  highYield: { label: 'High-Yield' },
-  caseBased: { label: 'Case-Based' },
-  pyq: { label: 'PYQ' },
-};
-
-
 const TaggedQuestionsPage: React.FC = () => {
-  const { tag } = useParams<{ tag: Tag }>();
+  const { tag } = useParams<{ tag: string }>();
   const { batches } = useAnalytics();
 
   const questions: MCQ[] = useMemo(() => {
@@ -30,11 +19,12 @@ const TaggedQuestionsPage: React.FC = () => {
         if (tag === 'mistaked') {
             return q.lastAttemptCorrect === false;
         }
-        return q.tags[tag];
+        const questionTags = q.tags || [];
+        return questionTags.includes(tag);
     });
   }, [tag, batches]);
 
-  const pageTitle = tag ? tagConfig[tag]?.label || tag : 'Tagged Questions';
+  const pageTitle = tag ? tag.charAt(0).toUpperCase() + tag.slice(1) : 'Tagged Questions';
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-in space-y-6">

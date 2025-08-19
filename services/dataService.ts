@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-import { AppData, Batch, ExamSession, MCQ, StudySessionResult, UserGoal, Tag, Activity, StudyQuestion, UserMetrics } from '../types';
+import { AppData, Batch, ExamSession, MCQ, StudySessionResult, UserGoal, Activity, StudyQuestion, UserMetrics } from '../types';
 
 // --- Configuration for localforage ---
 localforage.config({
@@ -50,18 +50,27 @@ export const addBatch = async (batch: Batch): Promise<boolean> => {
     const batches = await getBatches();
     const normalizedBatch = {
       ...batch,
-      questions: batch.questions.map(q => ({
-        ...q,
-        difficulty: q.difficulty || 'Medium',
-        questionType: q.questionType || 'MCQ',
-        tags: q.tags || {},
-        srsLevel: q.srsLevel || 0,
-        lastAttemptCorrect: q.lastAttemptCorrect === undefined ? null : q.lastAttemptCorrect,
-        nextReviewDate: q.nextReviewDate || new Date().toISOString(),
-      })),
+      questions: batch.questions.map(q => {
+        // Sanitize tags: ensure it's an array, lowercase, and unique.
+        const sanitizedTags = Array.isArray(q.tags)
+          ? [...new Set(q.tags.map(t => t.toLowerCase().trim()))]
+          : [];
+
+        return {
+          ...q,
+          difficulty: q.difficulty || 'Medium',
+          questionType: q.questionType || 'MCQ',
+          tags: sanitizedTags,
+          srsLevel: q.srsLevel || 0,
+          lastAttemptCorrect: q.lastAttemptCorrect === undefined ? null : q.lastAttemptCorrect,
+          nextReviewDate: q.nextReviewDate || new Date().toISOString(),
+        };
+      }),
     };
     const newBatches = [...batches, normalizedBatch].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    return saveBatches(newBatches);
+    const success = await saveBatches(newBatches);
+    if (success) window.dispatchEvent(new CustomEvent('mcqUpdated'));
+    return success;
 };
 
 export const updateQuestion = async (batchId: string, questionId: string, updates: Partial<MCQ>): Promise<boolean> => {
@@ -77,7 +86,9 @@ export const updateQuestion = async (batchId: string, questionId: string, update
         ...updates,
     };
 
-    return saveBatches(batches);
+    const success = await saveBatches(batches);
+    if (success) window.dispatchEvent(new CustomEvent('mcqUpdated', { detail: { batchId, questionId } }));
+    return success;
 };
 
 export const updateQuestionNotes = async (batchId: string, questionId: string, notes: string): Promise<boolean> => {
@@ -91,7 +102,9 @@ export const updateBatch = async (updatedBatch: Batch): Promise<boolean> => {
         return false; // Batch not found
     }
     batches[batchIndex] = updatedBatch;
-    return saveBatches(batches);
+    const success = await saveBatches(batches);
+    if (success) window.dispatchEvent(new CustomEvent('mcqUpdated'));
+    return success;
 };
 
 export const recordAnswerAndUpdateSrs = async (batchId: string, questionId: string, isCorrect: boolean): Promise<boolean> => {
@@ -117,7 +130,9 @@ export const recordAnswerAndUpdateSrs = async (batchId: string, questionId: stri
         nextReviewDate: nextReviewDate.toISOString(),
     };
 
-    return saveBatches(batches);
+    const success = await saveBatches(batches);
+    if (success) window.dispatchEvent(new CustomEvent('mcqUpdated', { detail: { batchId, questionId } }));
+    return success;
 };
 
 
@@ -194,7 +209,9 @@ export const batchUpdateQuestions = async (updatedQuestions: Partial<MCQ>[]): Pr
     // For a larger scale app, a more granular update would be better.
     // But for localforage, this is a common pattern.
     const updatedBatches = batches.map(b => batchesToUpdate.has(b.id) ? batchesToUpdate.get(b.id)! : b);
-    return saveBatches(updatedBatches);
+    const success = await saveBatches(updatedBatches);
+    if (success) window.dispatchEvent(new CustomEvent('mcqUpdated'));
+    return success;
 };
 
 
@@ -231,6 +248,7 @@ export const importAppData = async (data: AppData): Promise<boolean> => {
             safelySetItem(STUDY_HISTORY_KEY, data.studyHistory),
             safelySetItem(EXAM_HISTORY_KEY, data.examHistory),
         ]);
+        window.dispatchEvent(new CustomEvent('mcqUpdated'));
         return true;
     } catch (e) {
         console.error("Failed to import data:", e);
@@ -245,22 +263,28 @@ export const getAllQuestions = async (): Promise<MCQ[]> => {
     return batches.flatMap(b => b.questions);
 };
 
-export const getTagStats = async (): Promise<{ [key in Tag]: number }> => {
+export const getTagStats = async (): Promise<{ tag: string; count: number }[]> => {
     const allQuestions = await getAllQuestions();
-    const stats: { [key in Tag]: number } = {
-        bookmarked: 0, hard: 0, revise: 0, mistaked: 0,
-        highYield: 0, caseBased: 0, pyq: 0
-    };
+    const tagCounts: { [key: string]: number } = {};
+
     allQuestions.forEach(q => {
-        if (q.tags.bookmarked) stats.bookmarked++;
-        if (q.tags.hard) stats.hard++;
-        if (q.tags.revise) stats.revise++;
-        if (q.lastAttemptCorrect === false) stats.mistaked++;
-        if (q.tags.highYield) stats.highYield++;
-        if (q.tags.caseBased) stats.caseBased++;
-        if (q.tags.pyq) stats.pyq++;
+        if (Array.isArray(q.tags)) {
+            q.tags.forEach(tag => {
+                const normalizedTag = tag.toLowerCase();
+                tagCounts[normalizedTag] = (tagCounts[normalizedTag] || 0) + 1;
+            });
+        }
     });
-    return stats;
+
+    // Add a separate calculation for 'mistaked' as it's a special, implicit tag
+    const mistakedCount = allQuestions.filter(q => q.lastAttemptCorrect === false).length;
+    if (mistakedCount > 0) {
+        tagCounts['mistaked'] = mistakedCount;
+    }
+
+    return Object.entries(tagCounts)
+        .map(([tag, count]) => ({ tag, count }))
+        .sort((a, b) => b.count - a.count);
 };
 
 export const getDueReviewQuestions = async (): Promise<StudyQuestion[]> => {
@@ -410,3 +434,23 @@ export const getWeeklyGoalProgress = async () => {
 
 export const getStatsBySubject = () => getStatsByGrouping('subject');
 export const getStatsByPlatform = () => getStatsByGrouping('platform');
+
+export const updateTagCounts = async () => {
+    const batches = await getBatches();
+    const counts: { [key: string]: number } = {};
+
+    batches.forEach(batch => {
+        const normalizedSubject = batch.subject.toLowerCase();
+        counts[normalizedSubject] = (counts[normalizedSubject] || 0) + batch.questions.length;
+
+        batch.questions.forEach(q => {
+            if (q.tags && Array.isArray(q.tags)) {
+                q.tags.forEach(tag => {
+                    const normalizedTag = tag.toLowerCase();
+                    counts[normalizedTag] = (counts[normalizedTag] || 0) + 1;
+                });
+            }
+        });
+    });
+    return counts;
+};
