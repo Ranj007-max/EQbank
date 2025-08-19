@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { BookOpenCheck, Sun, Moon, LayoutDashboard, Library, BrainCircuit, PencilRuler, Plus, Minus, Search, ChevronLeft, User, Menu } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { BookOpenCheck, Sun, Moon, LayoutDashboard, Library, BrainCircuit, PencilRuler, Plus, Minus, Search, ChevronLeft, User, Menu, PanelLeftClose } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { useFontSize } from '../hooks/useFontSize';
 import { Button } from './ui/button';
@@ -22,14 +22,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { theme, toggleTheme } = useTheme();
   const { increaseFontSize, decreaseFontSize } = useFontSize();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
   const isExamMode = location.pathname.startsWith('/exam/session');
+  const isBankPage = location.pathname.startsWith('/bank');
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  const toggleDesktopSidebar = () => {
+    setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed);
+  }
+
+  useEffect(() => {
+    if (isBankPage) {
+      setIsDesktopSidebarCollapsed(true);
+    }
+  }, [isBankPage]);
 
   if (isExamMode) {
     return <div className="bg-background text-foreground h-screen">{children}</div>;
@@ -37,23 +49,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="bg-background text-foreground min-h-screen">
-      <div className="grid lg:grid-cols-[minmax(250px,20%)_1fr] h-screen">
+      <div className={`grid ${isDesktopSidebarCollapsed ? 'lg:grid-cols-[80px_1fr]' : 'lg:grid-cols-[minmax(250px,20%)_1fr]'} h-screen transition-all duration-300`}>
         {/* Sidebar */}
         <aside className={`fixed lg:relative inset-y-0 left-0 z-50 w-full max-w-[280px] lg:max-w-none lg:w-auto transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out bg-black/10 backdrop-blur-lg border-r border-white/10 flex-col ${isExamMode ? 'hidden lg:flex' : 'flex'}`}>
-          <div className="flex items-center gap-2.5 px-4 h-20 border-b border-white/10">
+          <div className={`flex items-center gap-2.5 px-4 h-20 border-b border-white/10 ${isDesktopSidebarCollapsed ? 'justify-center' : ''}`}>
               <BookOpenCheck className="h-7 w-7 text-primary" />
-              <h1 className="text-xl font-bold tracking-tighter">E-Qbank</h1>
+              <h1 className={`text-xl font-bold tracking-tighter ${isDesktopSidebarCollapsed ? 'hidden' : 'block'}`}>E-Qbank</h1>
           </div>
 
           <nav className="flex flex-col gap-1 p-4 flex-grow">
               {navItems.map(item => (
-                  <NavItem key={item.to} to={item.to} icon={item.icon}>{item.text}</NavItem>
+                  <NavItem key={item.to} to={item.to} icon={item.icon} isCollapsed={isDesktopSidebarCollapsed}>{item.text}</NavItem>
               ))}
           </nav>
 
           <div className="p-4 border-t border-white/10 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-muted-foreground">
+            <Button variant="ghost" size="icon" className="hidden lg:block w-full" onClick={toggleDesktopSidebar}>
+              <PanelLeftClose className={`transition-transform duration-300 ${isDesktopSidebarCollapsed ? 'rotate-180' : ''}`} />
+            </Button>
+            <div className={`flex items-center ${isDesktopSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+                <div className={`items-center gap-2 text-muted-foreground ${isDesktopSidebarCollapsed ? 'hidden' : 'flex'}`}>
                   <Sun className="h-5 w-5" />
                   <input
                     type="range"
