@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useExam } from '../context/ExamContext';
 import { useBatches } from '../context/BatchContext';
+import { useHLPE } from '../context/HLPEContext'; // HLPE
 import * as dataService from '../services/dataService';
 import { ExamSession, MCQ } from '../types';
-import { CheckCircle, XCircle, ChevronDown, LoaderCircle } from 'lucide-react';
+import { CheckCircle, XCircle, ChevronDown, LoaderCircle, Lightbulb } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { ExamHistoryTable } from '../components/ExamHistoryTable';
@@ -16,24 +17,30 @@ const ExamResults: React.FC = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const { examSession: lastExamSession } = useExam();
   const { updateQuestion } = useBatches();
+  const { triggerAnalysis, analysisResult } = useHLPE(); // HLPE
 
   const [sessionToDisplay, setSessionToDisplay] = useState<ExamSession | undefined | null>(undefined);
   const [isExplanationOpen, setIsExplanationOpen] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    const fetchSession = async () => {
-      if (sessionId) {
-        const session = await dataService.getExamById(sessionId);
-        setSessionToDisplay(session || null);
+    const fetchSessionAndAnalyze = async () => {
+      let session: ExamSession | undefined | null = null;
+      if (lastExamSession && lastExamSession.id === sessionId) {
+        session = lastExamSession;
+      } else if (sessionId) {
+        session = await dataService.getExamById(sessionId);
+      }
+
+      setSessionToDisplay(session || null);
+
+      if (session) {
+        // Trigger HLPE analysis for the completed exam
+        triggerAnalysis({ event: 'exam_completed', data: session });
       }
     };
 
-    if (lastExamSession && lastExamSession.id === sessionId) {
-      setSessionToDisplay(lastExamSession);
-    } else {
-      fetchSession();
-    }
-  }, [sessionId, lastExamSession]);
+    fetchSessionAndAnalyze();
+  }, [sessionId, lastExamSession, triggerAnalysis]);
 
   const animatedScore = useCountUp(sessionToDisplay?.score || 0, 1000);
   const animatedCorrect = useCountUp(sessionToDisplay?.correctAnswers || 0, 1000);
@@ -114,10 +121,40 @@ const ExamResults: React.FC = () => {
                 <p className="text-3xl font-bold">{timeTakenFormatted}</p>
                 <p className="text-sm font-medium text-muted-foreground">Time Taken</p>
               </div>
+              {analysisResult?.predictedScore && (
+                <div className="p-4 rounded-lg bg-primary/10">
+                  <p className="text-3xl font-bold text-primary">{Math.round(analysisResult.predictedScore)}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Projected Score</p>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {analysisResult?.errorClusters && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lightbulb />
+              HLPE Error Analysis
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Our engine has analyzed your incorrect answers. Here's the likely breakdown:
+            </p>
+            <div className="flex justify-around gap-4">
+              {analysisResult.errorClusters.map((cluster) => (
+                <div key={cluster.name} className="text-center p-4 bg-muted/50 rounded-lg flex-1">
+                  <p className="text-2xl font-bold">{cluster.count}</p>
+                  <p className="text-sm text-muted-foreground">{cluster.name}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
       
       <div>
         <h2 className="text-2xl font-bold text-foreground mb-4">Question Review</h2>

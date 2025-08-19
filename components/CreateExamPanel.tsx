@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useHLPE } from '../context/HLPEContext'; // HLPE
+import { Lightbulb } from 'lucide-react'; // HLPE
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -34,8 +36,18 @@ const CreateExamPanel: React.FC<CreateExamPanelProps> = ({
   savePreset,
   filteredQuestions,
 }) => {
+  const { analysisResult } = useHLPE(); // HLPE
   const [isPreviewModalOpen, setPreviewModalOpen] = useState(false);
   const [customPlatform, setCustomPlatform] = useState('');
+
+  const applyWeakAreasPreset = () => {
+    if (analysisResult?.studyPlan) {
+      const weakSubjects = analysisResult.studyPlan.map(s => s.subject);
+      onConfigChange({ subjects: weakSubjects });
+    } else {
+      alert("HLPE analysis data not available yet. Please wait a moment.");
+    }
+  };
 
   const handleClearFilters = () => {
     onConfigChange({
@@ -81,7 +93,17 @@ const CreateExamPanel: React.FC<CreateExamPanelProps> = ({
             </div>
           </div>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+        <div className="px-6 pt-4 border-t">
+            <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">
+              <Lightbulb className="text-primary" />
+              Adaptive Presets
+            </h3>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={applyWeakAreasPreset}>Weak Areas Mix</Button>
+              {/* Add other presets here */}
+            </div>
+        </div>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 pt-6">
           {/* Column 1 */}
           <div className="space-y-4">
             <div>

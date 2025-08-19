@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-import { AppData, Batch, ExamSession, MCQ, StudySessionResult, UserGoal, Tag, Activity, StudyQuestion } from '../types';
+import { AppData, Batch, ExamSession, MCQ, StudySessionResult, UserGoal, Tag, Activity, StudyQuestion, UserMetrics } from '../types';
 
 // --- Configuration for localforage ---
 localforage.config({
@@ -13,6 +13,7 @@ const BATCHES_KEY = 'pgqbank-batches';
 const STUDY_HISTORY_KEY = 'pgqbank-study-history';
 const EXAM_HISTORY_KEY = 'pgqbank-exam-history';
 const GOAL_KEY = 'pgqbank-goal';
+const USER_METRICS_KEY = 'pgqbank-user-metrics'; // HLPE
 
 // --- Helper Functions ---
 const safelyGetItem = async <T>(key: string, defaultValue: T): Promise<T> => {
@@ -157,6 +158,46 @@ export const setGoal = (goal: UserGoal | null): Promise<boolean> => {
     return safelySetItem(GOAL_KEY, goal);
 };
 
+// --- HLPE Data API ---
+export const getUserMetrics = (): Promise<UserMetrics> => {
+    return safelyGetItem<UserMetrics>(USER_METRICS_KEY, { userElo: 1000 });
+};
+
+export const saveUserMetrics = (metrics: UserMetrics): Promise<boolean> => {
+    return safelySetItem(USER_METRICS_KEY, metrics);
+};
+
+export const batchUpdateQuestions = async (updatedQuestions: Partial<MCQ>[]): Promise<boolean> => {
+    const batches = await getBatches();
+    const batchesToUpdate = new Map<string, Batch>();
+
+    for (const qUpdate of updatedQuestions) {
+        if (!qUpdate.id || !qUpdate.batchId) continue;
+
+        const batch = batches.find(b => b.id === qUpdate.batchId);
+        if (batch) {
+            const questionIndex = batch.questions.findIndex(q => q.id === qUpdate.id);
+            if (questionIndex !== -1) {
+                // Merge the updates into the existing question
+                batch.questions[questionIndex] = {
+                    ...batch.questions[questionIndex],
+                    ...qUpdate,
+                };
+                batchesToUpdate.set(batch.id, batch);
+            }
+        }
+    }
+
+    if (batchesToUpdate.size === 0) return true;
+
+    // This is not the most efficient way, as it re-saves the entire batches array.
+    // For a larger scale app, a more granular update would be better.
+    // But for localforage, this is a common pattern.
+    const updatedBatches = batches.map(b => batchesToUpdate.has(b.id) ? batchesToUpdate.get(b.id)! : b);
+    return saveBatches(updatedBatches);
+};
+
+
 // --- Import/Export API ---
 export const getAppData = async (): Promise<AppData> => {
     const [batches, studyHistory, examHistory] = await Promise.all([
@@ -230,7 +271,15 @@ export const getDueReviewQuestions = async (): Promise<StudyQuestion[]> => {
       batch.questions
         .filter(q => q.nextReviewDate && new Date(q.nextReviewDate) <= today)
         .map(q => ({...q, batchId: batch.id, subject: batch.subject, chapter: batch.chapter}))
-    ).sort((a,b) => new Date(a.nextReviewDate).getTime() - new Date(b.nextReviewDate).getTime());
+    ).sort((a,b) => {
+        // Prioritize by review date first, then by Elo difficulty (hardest first)
+        const dateA = new Date(a.nextReviewDate).getTime();
+        const dateB = new Date(b.nextReviewDate).getTime();
+        if (dateA !== dateB) {
+            return dateA - dateB;
+        }
+        return (b.elo || 1000) - (a.elo || 1000);
+    });
 };
 
 export const getPerformanceBySubject = async () => {

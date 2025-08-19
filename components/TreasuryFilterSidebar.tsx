@@ -1,6 +1,8 @@
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
+import { Checkbox } from './ui/checkbox'; // HLPE
+import { Lightbulb } from 'lucide-react'; // HLPE
 import { MultiSelect } from './ui/MultiSelect';
 import { MBBS_SUBJECTS, PLATFORMS } from '../data/constants';
 
@@ -10,6 +12,7 @@ export interface TreasuryFilters {
   chapters: string[];
   tags: string[];
   searchTerm: string;
+  focusWeakAreas?: boolean; // HLPE
 }
 
 interface TreasuryFilterSidebarProps {
@@ -30,6 +33,24 @@ const TreasuryFilterSidebar: React.FC<TreasuryFilterSidebarProps> = ({
   return (
     <div className="glass-card p-6 space-y-6">
       <h2 className="text-2xl font-bold">Filters</h2>
+
+      {/* HLPE Smart Filters */}
+      <div className="space-y-4 pt-4 border-t border-white/10">
+        <h3 className="text-lg font-semibold flex items-center gap-2 text-primary">
+          <Lightbulb size={20} />
+          Smart Filters
+        </h3>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="focus-weak-areas"
+            checked={filters.focusWeakAreas}
+            onCheckedChange={(checked) => onFiltersChange({ focusWeakAreas: !!checked })}
+          />
+          <Label htmlFor="focus-weak-areas" className="font-medium">
+            Focus on Weak Areas
+          </Label>
+        </div>
+      </div>
 
       {/* Platform Filter */}
       <div className="space-y-2">

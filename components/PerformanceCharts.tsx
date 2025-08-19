@@ -15,6 +15,8 @@ import { BarChart3 } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
+import { ScoreTrendPoint } from '../hlpe/hlpeEngine.worker';
+
 interface TimeData {
   date: string;
   score: number;
@@ -28,6 +30,7 @@ interface SubjectData {
 interface PerformanceChartsProps {
   timeData: TimeData[];
   subjectData: SubjectData[];
+  scoreTrend?: ScoreTrendPoint[]; // HLPE
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -42,12 +45,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ timeData, subjectData }) => {
+export const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ timeData, subjectData, scoreTrend }) => {
   const { theme } = useTheme();
   const axisColor = theme === 'dark' ? '#94a3b8' : '#64748b'; // hsl(215 20.2% 65.1%) : hsl(222.2 47.4% 11.2%)
   const gridColor = 'hsl(var(--border))';
   const primaryColor = 'hsl(var(--primary))';
+  const secondaryColor = 'hsl(var(--secondary))';
 
+  const chartTimeData = scoreTrend || timeData;
 
   return (
     <Card>
@@ -58,7 +63,7 @@ export const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ timeData, 
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {timeData.length === 0 && subjectData.length === 0 ? (
+        {chartTimeData.length === 0 && subjectData.length === 0 ? (
             <div className="text-center text-muted-foreground py-16">
                 <p>Complete a few sessions to see your performance analytics.</p>
             </div>
@@ -67,13 +72,16 @@ export const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ timeData, 
             <div className="h-80">
                 <h4 className="font-semibold text-center text-muted-foreground mb-2">Performance Over Time</h4>
                 <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={timeData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                <LineChart data={chartTimeData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
                     <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke={axisColor} />
                     <YAxis unit="%" domain={[0, 100]} tick={{ fontSize: 12 }} stroke={axisColor} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend wrapperStyle={{ fontSize: '14px' }} />
                     <Line type="monotone" dataKey="score" stroke={primaryColor} strokeWidth={2} dot={{ r: 4, fill: primaryColor }} activeDot={{ r: 6 }} name="Score"/>
+                    {scoreTrend && (
+                        <Line type="monotone" dataKey="ema" stroke={secondaryColor} strokeWidth={2} strokeDasharray="5 5" name="Trend (EMA)" />
+                    )}
                 </LineChart>
                 </ResponsiveContainer>
             </div>
