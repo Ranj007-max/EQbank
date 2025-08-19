@@ -24,6 +24,7 @@ const ExamSession: React.FC = () => {
     answerQuestion,
     setCurrentQuestionIndex,
     endExam,
+    updateQuestionInSession,
   } = useExam();
 
   const { updateQuestion } = useBatches();
@@ -78,9 +79,11 @@ const ExamSession: React.FC = () => {
 
   const toggleTag = (tag: keyof MCQ['tags']) => {
     if (!currentQuestion) return;
+    const newTags = { ...currentQuestion.tags, [tag]: !currentQuestion.tags?.[tag] };
     updateQuestion(currentQuestion.batchId, currentQuestion.id, {
-      tags: { ...currentQuestion.tags, [tag]: !currentQuestion.tags[tag] },
+      tags: newTags,
     });
+    updateQuestionInSession(currentQuestion.id, { tags: newTags });
   };
 
   const toggleMarkForReview = (questionId: string) => {
