@@ -18,7 +18,6 @@ interface ExamContextType {
   startExam: (config: ExamConfig, questions: ExamQuestion[]) => void;
   answerQuestion: (questionId: string, userAnswer: string | null) => void;
   endExam: () => Promise<void>;
-  updateQuestionInSession: (questionId: string, updates: Partial<ExamQuestion>) => void;
   currentQuestion: ExamQuestion | undefined;
   userAnswers: { [questionId: string]: string | null };
   currentQuestionIndex: number;
@@ -92,20 +91,6 @@ export const ExamProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const updateQuestionInSession = (questionId: string, updates: Partial<ExamQuestion>) => {
-    setExamSession(prevSession => {
-      if (!prevSession) return null;
-      return {
-        ...prevSession,
-        questions: prevSession.questions.map(q =>
-          q.questionData.id === questionId
-            ? { ...q, questionData: { ...q.questionData, ...updates } }
-            : q
-        ),
-      };
-    });
-  };
-
   const endExam = useCallback(async () => {
     stopTimer();
     if (!examSession) return;
@@ -158,7 +143,6 @@ export const ExamProvider = ({ children }: { children: ReactNode }) => {
     startExam,
     answerQuestion,
     endExam,
-    updateQuestionInSession,
     currentQuestion,
     userAnswers,
     currentQuestionIndex,

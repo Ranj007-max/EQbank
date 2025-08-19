@@ -1,7 +1,7 @@
-
-import { useState, useEffect } from 'react';
-import { BookOpenCheck, Sun, Moon, LayoutDashboard, Library, BrainCircuit, PencilRuler, Plus, Minus, Search, ChevronLeft, User, Menu, PanelLeftClose } from 'lucide-react';
+import { useState } from 'react';
+import { BookOpenCheck, Sun, Moon, LayoutDashboard, Library, BrainCircuit, PencilRuler, Plus, Minus, Search, ChevronLeft, User, Menu } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import { useFontSize } from '../hooks/useFontSize';
 import { Button } from './ui/button';
 import { NavItem } from './NavItem';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -19,22 +19,17 @@ const navItems = [
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
+  const { increaseFontSize, decreaseFontSize } = useFontSize();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
   const isExamMode = location.pathname.startsWith('/exam/session');
-  const isBankPage = location.pathname.startsWith('/bank');
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
-
-  const toggleDesktopSidebar = () => {
-    setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed);
-  }
 
   if (isExamMode) {
     return <div className="bg-background text-foreground h-screen">{children}</div>;
@@ -42,31 +37,45 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="bg-background text-foreground min-h-screen">
-      <div className={`grid ${isDesktopSidebarCollapsed ? 'lg:grid-cols-[80px_1fr]' : 'lg:grid-cols-[minmax(250px,20%)_1fr]'} h-screen transition-all duration-300`}>
+      <div className="grid lg:grid-cols-[minmax(250px,20%)_1fr] h-screen">
         {/* Sidebar */}
         <aside className={`fixed lg:relative inset-y-0 left-0 z-50 w-full max-w-[280px] lg:max-w-none lg:w-auto transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out bg-black/10 backdrop-blur-lg border-r border-white/10 flex-col ${isExamMode ? 'hidden lg:flex' : 'flex'}`}>
-          <div className={`flex items-center gap-2.5 px-4 h-20 border-b border-white/10 ${isDesktopSidebarCollapsed ? 'justify-center' : ''}`}>
+          <div className="flex items-center gap-2.5 px-4 h-20 border-b border-white/10">
               <BookOpenCheck className="h-7 w-7 text-primary" />
-              <h1 className={`text-xl font-bold tracking-tighter ${isDesktopSidebarCollapsed ? 'hidden' : 'block'}`}>E-Qbank</h1>
+              <h1 className="text-xl font-bold tracking-tighter">E-Qbank</h1>
           </div>
 
           <nav className="flex flex-col gap-1 p-4 flex-grow">
               {navItems.map(item => (
-                  <NavItem key={item.to} to={item.to} icon={item.icon} isCollapsed={isDesktopSidebarCollapsed}>{item.text}</NavItem>
+                  <NavItem key={item.to} to={item.to} icon={item.icon}>{item.text}</NavItem>
               ))}
           </nav>
 
           <div className="p-4 border-t border-white/10 space-y-4">
-            <Button variant="ghost" size="icon" className="hidden lg:block w-full" onClick={toggleDesktopSidebar}>
-              <PanelLeftClose className={`transition-transform duration-300 ${isDesktopSidebarCollapsed ? 'rotate-180' : ''}`} />
-            </Button>
-            <div className="flex items-center justify-center">
-              <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                <Sun className="h-6 w-6 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-6 w-6 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
-              </Button>
-            </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Sun className="h-5 w-5" />
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="1"
+                    value={theme === 'dark' ? 1 : 0}
+                    onChange={toggleTheme}
+                    className="neumorphic-slider w-20"
+                    aria-label="Theme toggle"
+                  />
+                  <Moon className="h-5 w-5" />
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="icon" onClick={decreaseFontSize} aria-label="Decrease font size">
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={increaseFontSize} aria-label="Increase font size">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
           </div>
         </aside>
 
