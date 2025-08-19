@@ -43,7 +43,7 @@ const QuestionsTreasury: React.FC = () => {
       const chapterMatch = filters.chapters.length === 0 || filters.chapters.includes(q.chapter);
       if (!chapterMatch) return false;
 
-      const tagMatch = filters.tags.length === 0 || filters.tags.every(tag => {
+      const tagMatch = filters.tags.length === 0 || filters.tags.some(tag => {
         if (!tag) return true;
         if (tag === 'Bookmark') return q.tags?.bookmarked;
         if (tag === 'Hard') return q.tags?.hard;

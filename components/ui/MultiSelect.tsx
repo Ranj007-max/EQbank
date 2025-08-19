@@ -5,7 +5,7 @@ import { ChevronsUpDown, X } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Button } from "./button";
 import { Badge } from "./badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 import { Input } from "./input";
 import { Checkbox } from "./checkbox";
 import { Label } from "./label";
@@ -39,8 +39,8 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
     const filteredOptions = options.filter(option => option.label.toLowerCase().includes(search.toLowerCase()));
 
     return (
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
           <Button
             ref={ref}
             variant="outline"
@@ -71,15 +71,10 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
             </div>
             <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
           </Button>
-        </DialogTrigger>
-        <DialogContent className="p-0">
-            <DialogHeader className="p-4 border-b">
-                <DialogTitle>{placeholder}</DialogTitle>
-            </DialogHeader>
+        </PopoverTrigger>
+        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
             <div className="p-4">
-
                 <Input
-
                     placeholder="Search..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -88,9 +83,7 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                     {filteredOptions.map(option => (
                         <div key={option.value} className="flex items-center space-x-2">
-
                             <Checkbox
-
                                 id={`multiselect-${option.value}`}
                                 checked={selected.includes(option.value)}
                                 onCheckedChange={() => handleSelect(option.value)}
@@ -102,8 +95,8 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                     ))}
                 </div>
             </div>
-        </DialogContent>
-      </Dialog>
+        </PopoverContent>
+      </Popover>
     );
   }
 );
