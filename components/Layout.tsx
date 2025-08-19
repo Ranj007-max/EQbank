@@ -1,7 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { BookOpenCheck, Sun, Moon, LayoutDashboard, Library, BrainCircuit, PencilRuler, Plus, Minus, Search, ChevronLeft, User, Menu, PanelLeftClose } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
-import { useFontSize } from '../hooks/useFontSize';
 import { Button } from './ui/button';
 import { NavItem } from './NavItem';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -19,8 +19,7 @@ const navItems = [
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { theme, toggleTheme } = useTheme();
-  const { increaseFontSize, decreaseFontSize } = useFontSize();
+  const { toggleTheme } = useTheme();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false);
   const location = useLocation();
@@ -36,12 +35,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const toggleDesktopSidebar = () => {
     setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed);
   }
-
-  useEffect(() => {
-    if (isBankPage) {
-      setIsDesktopSidebarCollapsed(true);
-    }
-  }, [isBankPage]);
 
   if (isExamMode) {
     return <div className="bg-background text-foreground h-screen">{children}</div>;
@@ -67,30 +60,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Button variant="ghost" size="icon" className="hidden lg:block w-full" onClick={toggleDesktopSidebar}>
               <PanelLeftClose className={`transition-transform duration-300 ${isDesktopSidebarCollapsed ? 'rotate-180' : ''}`} />
             </Button>
-            <div className={`flex items-center ${isDesktopSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
-                <div className={`items-center gap-2 text-muted-foreground ${isDesktopSidebarCollapsed ? 'hidden' : 'flex'}`}>
-                  <Sun className="h-5 w-5" />
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="1"
-                    value={theme === 'dark' ? 1 : 0}
-                    onChange={toggleTheme}
-                    className="neumorphic-slider w-20"
-                    aria-label="Theme toggle"
-                  />
-                  <Moon className="h-5 w-5" />
-                </div>
-                <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" onClick={decreaseFontSize} aria-label="Decrease font size">
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={increaseFontSize} aria-label="Increase font size">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+            <div className="flex items-center justify-center">
+              <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                <Sun className="h-6 w-6 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-6 w-6 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+            </div>
           </div>
         </aside>
 
