@@ -14,13 +14,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
-import { Tag, StudyQuestion } from '../types';
+import { StudyQuestion } from '../types';
 import { MultiSelect } from '../components/ui/MultiSelect';
 
 interface ReviewSettings {
   questionLimit: number;
   subjects: string[];
-  tags: Tag[];
+  tags: string[];
 }
 
 const SrsReviewSession: React.FC = () => {
@@ -31,7 +31,7 @@ const SrsReviewSession: React.FC = () => {
   // State for the setup screen
   const [allDueQuestions, setAllDueQuestions] = useState<StudyQuestion[]>([]);
   const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
-  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // State for the active session
@@ -59,7 +59,7 @@ const SrsReviewSession: React.FC = () => {
       ]);
       setAllDueQuestions(dueQuestions);
       setAvailableSubjects(subjectStats.map(s => s.name));
-      setAvailableTags((Object.keys(tagStats) as Tag[]).filter(tag => tagStats[tag] > 0));
+      setAvailableTags(tagStats.filter(t => t.count > 0).map(t => t.tag));
       setIsLoading(false);
     };
     if (!isSrsReviewActive) {
@@ -74,7 +74,8 @@ const SrsReviewSession: React.FC = () => {
       questions = questions.filter(q => subjectSet.has(q.subject));
     }
     if (reviewSettings.tags.length > 0) {
-      questions = questions.filter(q => reviewSettings.tags.every(tag => q.tags[tag]));
+      const tagSet = new Set(reviewSettings.tags);
+      questions = questions.filter(q => q.tags && q.tags.some(tag => tagSet.has(tag)));
     }
     return questions.slice(0, reviewSettings.questionLimit);
   }, [allDueQuestions, reviewSettings]);
@@ -110,11 +111,13 @@ const SrsReviewSession: React.FC = () => {
     setIsFlipped(false);
   };
 
-  const toggleTag = (tag: 'bookmarked' | 'hard') => {
-    if(!currentQuestion) return;
-    updateQuestion(currentQuestion.batchId, currentQuestion.id, {
-      tags: { ...currentQuestion.tags, [tag]: !currentQuestion.tags[tag] },
-    });
+  const toggleTag = (tag: string) => {
+    if (!currentQuestion) return;
+    const currentTags = currentQuestion.tags || [];
+    const newTags = currentTags.includes(tag)
+      ? currentTags.filter(t => t !== tag)
+      : [...currentTags, tag];
+    updateQuestion(currentQuestion.batchId, currentQuestion.id, { tags: newTags });
   };
   
   const goToNext = () => {
@@ -163,7 +166,7 @@ const SrsReviewSession: React.FC = () => {
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Filter by Tags</Label>
-                                    <MultiSelect options={availableTags.map(t => ({ value: t, label: t.charAt(0).toUpperCase() + t.slice(1) }))} selected={reviewSettings.tags} onChange={tags => setReviewSettings(rs => ({ ...rs, tags: tags as Tag[] }))} placeholder="All Tags" />
+                                    <MultiSelect options={availableTags.map(t => ({ value: t, label: t.charAt(0).toUpperCase() + t.slice(1) }))} selected={reviewSettings.tags} onChange={tags => setReviewSettings(rs => ({ ...rs, tags }))} placeholder="All Tags" />
                                 </div>
                             </div>
                         </DialogContent>
@@ -266,21 +269,26 @@ const SrsReviewSession: React.FC = () => {
                         {currentQuestion.options.map((option, i) => {
                             const isSelected = selectedOption === option;
                             const isCorrect = currentQuestion.answer === option;
-                            let variant: "outline" | "success" | "destructive" = "outline";
                             let icon = null;
-                            if(selectedOption) {
+
+                            if (selectedOption) {
                                 if (isCorrect) {
-                                    variant = "success";
                                     icon = <CheckCircle className="mr-2" />;
-                                }
-                                else if (isSelected && !isCorrect) {
-                                    variant = "destructive";
+                                } else if (isSelected && !isCorrect) {
                                     icon = <XCircle className="mr-2" />;
                                 }
                             }
 
                             return (
-                            <Button key={i} onClick={() => handleSelectOption(option)} disabled={!!selectedOption} variant={variant} className="w-full justify-start h-auto py-3 whitespace-normal text-base rounded-full">
+                            <Button
+                                key={i}
+                                onClick={() => handleSelectOption(option)}
+                                disabled={!!selectedOption}
+                                variant="neumorphic"
+                                selected={!!(isSelected || (selectedOption && isCorrect && option === currentQuestion.answer))}
+                                isDestructive={!!(isSelected && !isCorrect)}
+                                className="w-full justify-start h-auto py-3 whitespace-normal text-base rounded-full"
+                            >
                                 {icon}
                                 <span className="font-mono text-sm mr-4 opacity-70">{String.fromCharCode(65 + i)}.</span>
                                 <span className="text-left">{option}</span>
@@ -302,11 +310,11 @@ const SrsReviewSession: React.FC = () => {
                     </CardContent>
                     <CardFooter className="bg-muted/30 border-t px-6 py-3 flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                            <Button variant="ghost" onClick={() => toggleTag('bookmarked')} className={cn("btn-premium-label", questionForTags.tags.bookmarked && "underline !text-yellow-400")}>Bookmark</Button>
-                            <Button variant="ghost" onClick={() => toggleTag('hard')} className={cn("btn-premium-label", questionForTags.tags.hard && "underline !text-red-500")}>Mark as Hard</Button>
+                            <Button id={`srs-bookmark-${questionForTags.id}`} variant="neumorphic" size="sm" onClick={() => toggleTag('bookmarked')} selected={(questionForTags.tags || []).includes('bookmarked')}>Bookmark</Button>
+                            <Button id={`srs-hard-${questionForTags.id}`} variant="neumorphic" size="sm" onClick={() => toggleTag('hard')} selected={(questionForTags.tags || []).includes('hard')} isDestructive={(questionForTags.tags || []).includes('hard')}>Mark as Hard</Button>
                             <Dialog open={isNotesModalOpen} onOpenChange={setIsNotesModalOpen}>
                                 <DialogTrigger asChild>
-                                    <Button variant="ghost" className="btn-premium-label">Notes</Button>
+                                    <Button variant="neumorphic" size="sm">Notes</Button>
                                 </DialogTrigger>
                                 <DialogContent>
                                 <DialogHeader><DialogTitle>Notes for this Question</DialogTitle></DialogHeader>

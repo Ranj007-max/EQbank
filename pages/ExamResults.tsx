@@ -61,10 +61,14 @@ const ExamResults: React.FC = () => {
     );
   }
 
-  const toggleTag = (mcq: MCQ, tag: keyof MCQ['tags']) => {
-    updateQuestion(mcq.batchId, mcq.id, {
-      tags: { ...mcq.tags, [tag]: !mcq.tags[tag] },
-    });
+  const toggleTag = (mcq: MCQ, tag: string) => {
+    const currentTags = mcq.tags || [];
+    const newTags = currentTags.includes(tag)
+      ? currentTags.filter(t => t !== tag)
+      : [...currentTags, tag];
+
+    updateQuestion(mcq.batchId, mcq.id, { tags: newTags });
+
     // Optimistically update UI
     setSessionToDisplay(prev => {
         if (!prev) return null;
@@ -72,7 +76,7 @@ const ExamResults: React.FC = () => {
             ...prev,
             questions: prev.questions.map(q =>
                 q.questionData.id === mcq.id
-                ? { ...q, questionData: { ...q.questionData, tags: { ...q.questionData.tags, [tag]: !q.questionData.tags[tag] } } }
+                ? { ...q, questionData: { ...q.questionData, tags: newTags } }
                 : q
             )
         }
@@ -164,13 +168,13 @@ const ExamResults: React.FC = () => {
                 <CardHeader className="flex flex-row justify-between items-start">
                     <p className="font-semibold text-foreground flex-1 pr-4">{index + 1}. {questionData.question}</p>
                     <div className="flex items-center gap-2">
-                        <Button variant="ghost" onClick={() => toggleTag(questionData, 'bookmarked')} className={cn("btn-premium-label", questionData.tags.bookmarked && "underline !text-yellow-400")}>
+                        <Button id={`er-bookmark-${questionData.id}`} variant="neumorphic" size="sm" onClick={() => toggleTag(questionData, 'bookmarked')} selected={(questionData.tags || []).includes('bookmarked')}>
                             Bookmark
                         </Button>
-                        <Button variant="ghost" onClick={() => toggleTag(questionData, 'hard')} className={cn("btn-premium-label", questionData.tags.hard && "underline !text-red-500")}>
+                        <Button id={`er-hard-${questionData.id}`} variant="neumorphic" size="sm" onClick={() => toggleTag(questionData, 'hard')} selected={(questionData.tags || []).includes('hard')} isDestructive={(questionData.tags || []).includes('hard')}>
                             Mark as Hard
                         </Button>
-                        <Button variant="ghost" onClick={() => toggleTag(questionData, 'revise')} className={cn("btn-premium-label", questionData.tags.revise && "underline !text-blue-400")}>
+                        <Button id={`er-revise-${questionData.id}`} variant="neumorphic" size="sm" onClick={() => toggleTag(questionData, 'revise')} selected={(questionData.tags || []).includes('revise')}>
                             Revise Later
                         </Button>
                     </div>
