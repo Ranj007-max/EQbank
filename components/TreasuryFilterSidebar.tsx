@@ -1,7 +1,10 @@
 import { Label } from './ui/label';
+import { Input } from './ui/input';
 import { Button } from './ui/button';
+import { Checkbox } from './ui/checkbox'; // HLPE
+import { Lightbulb } from 'lucide-react'; // HLPE
 import { MultiSelect } from './ui/MultiSelect';
-import { MBBS_SUBJECTS, PLATFORMS, TAGS } from '../data/constants';
+import { MBBS_SUBJECTS, PLATFORMS } from '../data/constants';
 
 export interface TreasuryFilters {
   platforms: string[];
@@ -12,24 +15,41 @@ export interface TreasuryFilters {
   focusWeakAreas?: boolean; // HLPE
 }
 
-interface PremiumFilterPanelProps {
+interface TreasuryFilterSidebarProps {
   filters: TreasuryFilters;
   onFiltersChange: (filters: Partial<TreasuryFilters>) => void;
+  onApply: () => void;
   onReset: () => void;
   availableChapters: { value: string; label: string }[];
 }
 
-const PremiumFilterPanel: React.FC<PremiumFilterPanelProps> = ({
+const TreasuryFilterSidebar: React.FC<TreasuryFilterSidebarProps> = ({
   filters,
   onFiltersChange,
+  onApply,
   onReset,
   availableChapters,
 }) => {
   return (
-    <div className="bg-card text-card-foreground rounded-lg shadow-lg p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Filters</h2>
-        <Button variant="ghost" onClick={onReset}>Reset</Button>
+    <div className="glass-card p-6 space-y-6">
+      <h2 className="text-2xl font-bold">Filters</h2>
+
+      {/* HLPE Smart Filters */}
+      <div className="space-y-4 pt-4 border-t border-white/10">
+        <h3 className="text-lg font-semibold flex items-center gap-2 text-primary">
+          <Lightbulb size={20} />
+          Smart Filters
+        </h3>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="focus-weak-areas"
+            checked={filters.focusWeakAreas}
+            onCheckedChange={(checked) => onFiltersChange({ focusWeakAreas: !!checked })}
+          />
+          <Label htmlFor="focus-weak-areas" className="font-medium">
+            Focus on Weak Areas
+          </Label>
+        </div>
       </div>
 
       {/* Platform Filter */}
@@ -74,32 +94,22 @@ const PremiumFilterPanel: React.FC<PremiumFilterPanelProps> = ({
 
       {/* Tags Filter */}
       <div className="space-y-2">
-        <Label>Tags</Label>
-        <div className="flex flex-wrap gap-2">
-          {TAGS.map(tag => {
-            const isSelected = filters.tags.includes(tag);
-            return (
-              <Button
-                key={tag}
-                variant={isSelected ? 'default' : 'outline'}
-                size="sm"
-                className={`rounded-full ${isSelected ? 'font-bold' : ''}`}
-                onClick={() => {
-                  const newTags = isSelected
-                    ? filters.tags.filter(t => t !== tag)
-                    : [...filters.tags, tag];
-                  onFiltersChange({ tags: newTags });
-                }}
-              >
-                {tag}
-              </Button>
-            );
-          })}
-        </div>
+        <Label htmlFor="tags-filter">Tags</Label>
+        <Input
+          id="tags-filter"
+          placeholder="e.g. High-Yield, Image-Based"
+          className="neumorphic-input"
+          value={filters.tags.join(', ')}
+          onChange={(e) => onFiltersChange({ tags: e.target.value.split(',').map(t => t.trim()) })}
+        />
       </div>
 
+      <div className="flex justify-between pt-4 border-t border-white/10">
+        <Button variant="outline" className="neumorphic-button" onClick={onReset}>Reset Filters</Button>
+        <Button className="btn-gradient" onClick={onApply}>Apply</Button>
+      </div>
     </div>
   );
 };
 
-export default PremiumFilterPanel;
+export default TreasuryFilterSidebar;
