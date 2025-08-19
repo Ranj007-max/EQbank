@@ -33,7 +33,7 @@ const StudyPanel: React.FC<StudyPanelProps> = ({ isOpen, onOpenChange }) => {
   const { batches } = useAnalytics();
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(['unattempted']);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [numQuestions, setNumQuestions] = useState(20);
   
   const allQuestions = useMemo((): StudyQuestion[] => 

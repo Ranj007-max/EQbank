@@ -61,7 +61,7 @@ const ExamSetup: React.FC = () => {
       const chapterMatch = config.chapters.length === 0 || config.chapters.includes(q.chapter);
       if (!chapterMatch) return false;
 
-      const tagMatch = config.tags.length === 0 || config.tags.every(tag => {
+      const tagMatch = config.tags.length === 0 || config.tags.some(tag => {
         if (tag === 'Bookmark') return q.tags?.bookmarked;
         if (tag === 'Hard') return q.tags?.hard;
         if (tag === 'Revise') return q.tags?.revise;
