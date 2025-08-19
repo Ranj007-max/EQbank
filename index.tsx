@@ -7,6 +7,7 @@ import { AnalyticsProvider } from './context/AnalyticsContext';
 import { BatchProvider } from './context/BatchContext';
 import { ExamProvider } from './context/ExamContext';
 import { StudyProvider } from './context/StudyContext';
+import { HLPEProvider } from './context/HLPEContext';
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -31,7 +32,9 @@ root.render(
         <BatchProvider>
           <ExamProvider>
             <StudyProvider>
-              <App />
+              <HLPEProvider>
+                <App />
+              </HLPEProvider>
             </StudyProvider>
           </ExamProvider>
         </BatchProvider>

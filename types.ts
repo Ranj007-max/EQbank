@@ -21,6 +21,9 @@ export interface MCQ {
   lastAttemptCorrect: boolean | null; // null: unattempted, true: correct, false: incorrect
   srsLevel: number;
   nextReviewDate: string; // ISO string
+  elo?: number; // HLPE: Elo rating for the question
+  srsEasinessFactor?: number; // HLPE: SuperMemo SM-2 easiness factor
+  srsInterval?: number; // HLPE: SuperMemo SM-2 interval in days
 }
 
 export interface ParsedMCQ {
@@ -105,6 +108,12 @@ export interface AppData {
 export interface UserGoal {
   type: 'weeklyQuestions';
   target: number;
+}
+
+// HLPE: To store user-specific learning metrics
+export interface UserMetrics {
+  userElo: number; // User's current Elo rating
+  // Can be extended with other metrics like learning velocity, etc.
 }
 
 export type Tag = 'bookmarked' | 'hard' | 'revise' | 'mistaked' | 'highYield' | 'caseBased' | 'pyq';

@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useAnalytics } from '../context/AnalyticsContext';
+import { useHLPE } from '../context/HLPEContext'; // HLPE
 import { GoalTrackerWidget } from './GoalTrackerWidget';
+import { HLPESuggestionsWidget } from './HLPESuggestionsWidget'; // HLPE
 import { PerformanceCharts } from './PerformanceCharts';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Button } from './ui/button';
@@ -8,6 +10,7 @@ import { ActivityItem } from './ActivityItem';
 
 const Dashboard: React.FC = () => {
     const { recentActivity, performanceOverTime, performanceBySubject } = useAnalytics();
+    const { analysisResult } = useHLPE(); // HLPE
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -20,7 +23,11 @@ const Dashboard: React.FC = () => {
                     
                 </div>
 
-                <PerformanceCharts timeData={performanceOverTime} subjectData={performanceBySubject} />
+                <PerformanceCharts
+                    timeData={performanceOverTime}
+                    subjectData={performanceBySubject}
+                    scoreTrend={analysisResult?.scoreTrend} // HLPE
+                />
 
                 <Card>
                     <CardHeader>
@@ -61,6 +68,8 @@ const Dashboard: React.FC = () => {
                         </Button>
                     </CardContent>
                 </Card>
+
+                <HLPESuggestionsWidget studyPlan={analysisResult?.studyPlan} />
 
                 <GoalTrackerWidget />
             </div>

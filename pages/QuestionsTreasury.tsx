@@ -1,21 +1,26 @@
 import { Search, Download } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Input } from '../components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'; // HLPE
 import TreasuryFilterSidebar, { TreasuryFilters } from '../components/TreasuryFilterSidebar';
 import TreasuryContent from '../components/TreasuryContent';
 import { useBatches } from '../context/BatchContext';
+import { useHLPE } from '../context/HLPEContext'; // HLPE
 import { Button } from '../components/ui/button';
 import { ExamQuestion } from '../types';
 
 const QuestionsTreasury: React.FC = () => {
   const { batches } = useBatches();
+  const { analysisResult } = useHLPE(); // HLPE
   const [filters, setFilters] = useState<TreasuryFilters>({
     platforms: [],
     subjects: [],
     chapters: [],
     tags: [],
     searchTerm: '',
+    focusWeakAreas: false, // HLPE
   });
+  const [sortOrder, setSortOrder] = useState('elo-desc'); // HLPE
 
   const allQuestions = useMemo((): ExamQuestion[] =>
     batches.flatMap(batch =>
@@ -33,9 +38,18 @@ const QuestionsTreasury: React.FC = () => {
   }, [batches, filters.subjects]);
 
   const filteredQuestions = useMemo(() => {
+    const weakSubjects = analysisResult?.studyPlan?.map(s => s.subject) || [];
+
     return allQuestions.filter(q => {
       const subjectMatch = filters.subjects.length === 0 || filters.subjects.includes(q.subject);
       if (!subjectMatch) return false;
+
+      // HLPE: Smart filter logic
+      if (filters.focusWeakAreas && weakSubjects.length > 0) {
+        if (!weakSubjects.includes(q.subject)) {
+          return false;
+        }
+      }
 
       const platformMatch = filters.platforms.length === 0 || filters.platforms.includes(q.platform || '');
       if (!platformMatch) return false;
@@ -59,7 +73,25 @@ const QuestionsTreasury: React.FC = () => {
 
       return true;
     });
-  }, [allQuestions, filters]);
+  }, [allQuestions, filters, analysisResult]);
+
+  const sortedQuestions = useMemo(() => {
+    return [...filteredQuestions].sort((a, b) => {
+      switch (sortOrder) {
+        case 'elo-desc':
+          return (b.elo || 1000) - (a.elo || 1000);
+        case 'elo-asc':
+          return (a.elo || 1000) - (b.elo || 1000);
+        case 'date-desc':
+          // Assuming batchId can be used for date sorting, might need to be improved
+          return b.batchId.localeCompare(a.batchId);
+        case 'date-asc':
+          return a.batchId.localeCompare(b.batchId);
+        default:
+          return 0;
+      }
+    });
+  }, [filteredQuestions, sortOrder]);
 
   const handleFiltersChange = (newFilters: Partial<TreasuryFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
@@ -105,14 +137,27 @@ const QuestionsTreasury: React.FC = () => {
             Analyze your question bank with powerful filters and visualizations.
           </p>
         </div>
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            placeholder="Search questions..."
-            className="pl-10 neumorphic-input"
-            value={filters.searchTerm}
-            onChange={(e) => handleFiltersChange({ searchTerm: e.target.value })}
-          />
+        <div className="flex items-center gap-4">
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              placeholder="Search questions..."
+              className="pl-10 neumorphic-input"
+              value={filters.searchTerm}
+              onChange={(e) => handleFiltersChange({ searchTerm: e.target.value })}
+            />
+          </div>
+          <Select value={sortOrder} onValueChange={setSortOrder}>
+              <SelectTrigger className="w-[220px] neumorphic-button">
+                  <SelectValue placeholder="Sort by..." />
+              </SelectTrigger>
+              <SelectContent>
+                  <SelectItem value="elo-desc">Sort by Elo (Hardest)</SelectItem>
+                  <SelectItem value="elo-asc">Sort by Elo (Easiest)</SelectItem>
+                  <SelectItem value="date-desc">Date Added (Newest)</SelectItem>
+                  <SelectItem value="date-asc">Date Added (Oldest)</SelectItem>
+              </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -128,7 +173,7 @@ const QuestionsTreasury: React.FC = () => {
         </aside>
 
         <main className="lg:col-span-3 space-y-6">
-          <TreasuryContent questions={filteredQuestions} />
+          <TreasuryContent questions={sortedQuestions} />
         </main>
       </div>
 
