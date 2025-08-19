@@ -26,7 +26,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
 
   const isExamMode = location.pathname.startsWith('/exam/session');
-  const isBankPage = location.pathname.startsWith('/bank');
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
