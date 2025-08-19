@@ -229,7 +229,7 @@ export const getDueReviewQuestions = async (): Promise<StudyQuestion[]> => {
     return batches.flatMap(batch =>
       batch.questions
         .filter(q => q.nextReviewDate && new Date(q.nextReviewDate) <= today)
-        .map(q => ({...q, batchId: batch.id, subject: batch.subject}))
+        .map(q => ({...q, batchId: batch.id, subject: batch.subject, chapter: batch.chapter}))
     ).sort((a,b) => new Date(a.nextReviewDate).getTime() - new Date(b.nextReviewDate).getTime());
 };
 

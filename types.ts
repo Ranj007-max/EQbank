@@ -58,6 +58,7 @@ export interface StudySessionResult {
 export interface StudyQuestion extends MCQ {
   batchId: string;
   subject: string;
+  chapter: string;
 }
 
 // For passing questions to the exam session component
