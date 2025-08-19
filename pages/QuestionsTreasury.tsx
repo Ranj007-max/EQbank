@@ -60,10 +60,11 @@ const QuestionsTreasury: React.FC = () => {
 
       const tagMatch = filters.tags.length === 0 || filters.tags.some(tag => {
         if (!tag) return true;
-        if (tag === 'Bookmark') return q.tags?.bookmarked;
-        if (tag === 'Hard') return q.tags?.hard;
-        if (tag === 'Revise') return q.tags?.revise;
-        return (q.tags ? Object.keys(q.tags).includes(tag) : false);
+        const questionTags = q.tags || [];
+        if (tag === 'Bookmark') return questionTags.includes('bookmarked');
+        if (tag === 'Hard') return questionTags.includes('hard');
+        if (tag === 'Revise') return questionTags.includes('revise');
+        return questionTags.includes(tag);
       });
       if(!tagMatch) return false;
 

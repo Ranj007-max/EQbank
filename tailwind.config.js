@@ -40,6 +40,14 @@ module.exports = {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        selected: {
+          DEFAULT: "hsl(var(--selected))",
+          foreground: "hsl(var(--selected-foreground))",
+        },
+        "destructive-selected": {
+            DEFAULT: "hsl(var(--destructive-selected))",
+            foreground: "hsl(var(--destructive-selected-foreground))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
@@ -65,6 +73,8 @@ module.exports = {
       boxShadow: {
         premium: '0 4px 20px rgba(0,0,0,0.1)',
         'bioluminescent-glow': '0 0 20px 0px hsl(var(--primary))',
+        'neumorphic-default': '0 4px 8px rgba(0,0,0,0.2), inset 0 -2px 4px rgba(255,255,255,0.1)',
+        'neumorphic-selected': 'inset 0 2px 4px rgba(0,0,0,0.2)',
       },
       keyframes: {
         "accordion-down": {

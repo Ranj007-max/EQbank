@@ -60,9 +60,15 @@
     --muted-foreground: 0 0% 60%;
 
     --success: 154 100% 50%; /* Success Green */
-    --destructive: 0 100% 65%; /* Error Red */
     --warning: 42 100% 50%; /* Warning Amber */
+
+    --selected: 205 100% 50%; /* #00A8FF */
+    --selected-foreground: 0 0% 4%; /* Obsidian Black for contrast */
+
+    --destructive: 0 100% 65%; /* Error Red */
     --destructive-foreground: 0 0% 98%;
+    --destructive-selected: 0 100% 65%;
+    --destructive-selected-foreground: 0 0% 98%;
     --border: 0 0% 20%;
     --input: 0 0% 25%;
     --ring: 205 100% 50%;

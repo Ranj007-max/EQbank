@@ -7,7 +7,6 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
 import { cn } from '../lib/utils';
-import { MCQ } from '../types';
 
 const StudySession: React.FC = () => {
   const navigate = useNavigate();
@@ -35,11 +34,13 @@ const StudySession: React.FC = () => {
     setAnsweredQuestions(prev => ({ ...prev, [currentQuestion.id]: option }));
   };
 
-  const toggleTag = (tag: keyof MCQ['tags']) => {
+  const toggleTag = (tag: string) => {
     if (!currentQuestion) return;
-    updateQuestion(currentQuestion.batchId, currentQuestion.id, {
-      tags: { ...currentQuestion.tags, [tag]: !currentQuestion.tags[tag] },
-    });
+    const currentTags = currentQuestion.tags || [];
+    const newTags = currentTags.includes(tag)
+      ? currentTags.filter(t => t !== tag)
+      : [...currentTags, tag];
+    updateQuestion(currentQuestion.batchId, currentQuestion.id, { tags: newTags });
   };
 
   const goToNext = () => {
@@ -79,21 +80,26 @@ const StudySession: React.FC = () => {
             {currentQuestion.options.map((option, i) => {
                 const isSelected = selectedOption === option;
                 const isCorrect = currentQuestion.answer === option;
-                let variant: "outline" | "success" | "destructive" = "outline";
                 let icon = null;
                 if(selectedOption) {
                     if (isCorrect) {
-                      variant = "success";
                       icon = <CheckCircle className="mr-2" />;
                     }
                     else if (isSelected && !isCorrect) {
-                      variant = "destructive";
                       icon = <XCircle className="mr-2" />;
                     }
                 }
                 
                 return (
-                <Button key={i} onClick={() => handleSelectOption(option)} disabled={!!selectedOption} variant={variant} className={cn("w-full justify-start h-auto py-3 whitespace-normal text-base")}>
+                <Button
+                    key={i}
+                    onClick={() => handleSelectOption(option)}
+                    disabled={!!selectedOption}
+                    variant="neumorphic"
+                    isSelected={!!(isSelected || (selectedOption && isCorrect))}
+                    isDestructive={!!(isSelected && !isCorrect)}
+                    className={cn("w-full justify-start h-auto py-3 whitespace-normal text-base")}
+                >
                     {icon}
                     <span className="font-mono text-sm mr-4 opacity-70">{String.fromCharCode(65 + i)}.</span>
                     <span className="text-left">{option}</span>
@@ -115,12 +121,12 @@ const StudySession: React.FC = () => {
         </CardContent>
         <CardFooter className="bg-muted/30 border-t px-6 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" onClick={() => toggleTag('bookmarked')} className={cn("btn-premium-label", currentQuestion.tags.bookmarked && "underline !text-yellow-400")}>Bookmark</Button>
-            <Button variant="ghost" onClick={() => toggleTag('hard')} className={cn("btn-premium-label", currentQuestion.tags.hard && "underline !text-red-500")}>Mark as Hard</Button>
-            <Button variant="ghost" onClick={() => toggleTag('revise')} className={cn("btn-premium-label", currentQuestion.tags.revise && "underline !text-blue-400")}>Revise</Button>
+            <Button variant="neumorphic" size="sm" onClick={() => toggleTag('bookmarked')} isSelected={(currentQuestion.tags || []).includes('bookmarked')}>Bookmark</Button>
+            <Button variant="neumorphic" size="sm" onClick={() => toggleTag('hard')} isSelected={(currentQuestion.tags || []).includes('hard')} isDestructive={(currentQuestion.tags || []).includes('hard')}>Mark as Hard</Button>
+            <Button variant="neumorphic" size="sm" onClick={() => toggleTag('revise')} isSelected={(currentQuestion.tags || []).includes('revise')}>Revise</Button>
           </div>
           {selectedOption && (
-            <Button onClick={goToNext} variant="gradient">
+            <Button onClick={goToNext}>
               {currentQuestionIndex < studyQuestions.length - 1 ? 'Next Question' : 'Finish Session'}
             </Button>
           )}
