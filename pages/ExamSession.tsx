@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useExam } from '../context/ExamContext';
 import { useBatches } from '../context/BatchContext';
-import { ChevronLeft, ChevronRight, LoaderCircle, Flag, Bookmark } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LoaderCircle, Bookmark, Heart, RefreshCw } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter } from '../components/ui/card';
 import { useSound } from '../hooks/useSound';
@@ -151,20 +151,27 @@ const ExamSession: React.FC = () => {
         <div className="flex items-center gap-2">
           <Button
             variant="neumorphic"
-            onClick={() => toggleTag('flagged')}
-            isSelected={(currentQuestion.tags || []).includes('flagged')}
-            isDestructive={(currentQuestion.tags || []).includes('flagged')}
+            onClick={() => toggleTag('hard')}
+            isSelected={(currentQuestion.tags || []).includes('hard')}
             className="flex items-center gap-2"
           >
-            <Flag size={20} /> Flag Question
+            <Heart size={20} /> Hard
           </Button>
-           <Button
+          <Button
+            variant="neumorphic"
+            onClick={() => toggleTag('revise')}
+            isSelected={(currentQuestion.tags || []).includes('revise')}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw size={20} /> Revise
+          </Button>
+          <Button
             variant="neumorphic"
             onClick={() => toggleTag('bookmarked')}
             isSelected={(currentQuestion.tags || []).includes('bookmarked')}
             className="flex items-center gap-2"
           >
-            <Bookmark size={20} /> Bookmark
+            <Bookmark size={20} className={(currentQuestion.tags || []).includes('bookmarked') ? 'text-yellow-400' : ''} /> Bookmark
           </Button>
         </div>
         <div className="flex items-center gap-4">
