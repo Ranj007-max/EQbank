@@ -1,7 +1,6 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
-import { useDebouncedCallback } from "../../hooks/useDebounce"
 
 import { cn } from "../../lib/utils"
 
@@ -44,26 +43,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, isSelected, isDestructive, onClick, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
 
-    const debouncedOnClick = useDebouncedCallback((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-       if (onClick) {
-        onClick(event);
-      }
-    }, 300);
-
     const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-      event.stopPropagation();
-
       // Haptic feedback for selection
       if (navigator.vibrate && !isSelected) {
         navigator.vibrate(10);
       }
-
-      debouncedOnClick(event);
-    };
-
-    const handleTouchStart = (event: React.TouchEvent<HTMLButtonElement>) => {
-        // Prevent default browser actions like scrolling or zooming on touch.
-        event.preventDefault();
+      if (onClick) {
+        onClick(event);
+      }
     };
 
     // Base classes from CVA
@@ -81,8 +68,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(baseClasses, selectedClasses, className)}
         ref={ref}
         onClick={handleClick}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={(e) => e.preventDefault()}
         aria-pressed={isSelected}
         {...props}
       />
