@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Bookmark, AlertTriangle, Tag as TagIcon, Star, History, Image } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Bookmark, AlertTriangle, Tag as TagIcon, Star, History, Image, Heart, RefreshCw } from 'lucide-react';
 import { getTagStats } from '../services/dataService';
 import { eventBus, APP_EVENTS } from '../lib/events';
+import { cn } from '../lib/utils';
 
 interface TagStat {
   tag: string;
@@ -16,6 +16,8 @@ const tagConfig: { [key: string]: { icon: React.ElementType; label: string } } =
   'high-yield': { icon: Star, label: 'High-Yield' },
   pyq: { icon: History, label: 'PYQ' },
   'image-based': { icon: Image, label: 'Image Based' },
+  hard: { icon: Heart, label: 'Hard' },
+  revise: { icon: RefreshCw, label: 'Revise' },
   default: { icon: TagIcon, label: 'Tag' },
 };
 
@@ -24,13 +26,25 @@ const getTagConfig = (tag: string) => {
     return tagConfig[normalizedTag] || { ...tagConfig.default, label: tag.charAt(0).toUpperCase() + tag.slice(1) };
 };
 
-export const TagStatsWidget = () => {
+interface TagStatsWidgetProps {
+  onTagSelect: (tag: string | null) => void;
+  activeTag: string | null;
+}
+
+export const TagStatsWidget: React.FC<TagStatsWidgetProps> = ({ onTagSelect, activeTag }) => {
   const [stats, setStats] = useState<TagStat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchStats = useCallback(async () => {
     setIsLoading(true);
-    const tagStats = await getTagStats();
+    let tagStats = await getTagStats();
+    // Ensure all important tags are present, even if count is 0
+    const importantTags = ['bookmarked', 'hard', 'revise', 'mistaked'];
+    importantTags.forEach(it => {
+      if (!tagStats.find(st => st.tag === it)) {
+        tagStats.push({ tag: it, count: 0 });
+      }
+    });
     setStats(tagStats);
     setIsLoading(false);
   }, []);
@@ -53,21 +67,32 @@ export const TagStatsWidget = () => {
         {isLoading ? (
             <div className="text-center p-8">Loading stats...</div>
         ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
             {stats.map(({ tag, count }) => {
                 const config = getTagConfig(tag);
                 const Icon = config.icon;
+                const isActive = activeTag === tag;
 
                 return (
-                <Link to={`/bank/tagged/${tag}`} key={tag} className="block p-4 bg-muted/30 rounded-lg transition-all hover:bg-muted/60 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 border border-primary/20">
-                    <Icon className="h-8 w-8 text-primary" />
+                <div
+                  key={tag}
+                  onClick={() => onTagSelect(isActive ? null : tag)}
+                  className={cn(
+                    "block p-4 bg-muted/30 rounded-lg transition-all hover:bg-muted/60 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer",
+                    isActive && "bg-primary/20 ring-2 ring-primary"
+                  )}
+                >
+                    <div className={cn(
+                      "flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 border border-primary/20",
+                      isActive && "bg-primary/20"
+                    )}>
+                      <Icon className={cn("h-8 w-8 text-primary", tag === 'bookmarked' && 'text-yellow-400', tag === 'hard' && 'text-red-500')} />
                     </div>
                     <div className="text-center">
-                    <p className="text-2xl font-bold">{count}</p>
-                    <p className="text-sm text-muted-foreground">{config.label}</p>
+                      <p className="text-2xl font-bold">{count}</p>
+                      <p className="text-sm text-muted-foreground">{config.label}</p>
                     </div>
-                </Link>
+                </div>
                 );
             })}
             </div>

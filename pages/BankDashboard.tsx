@@ -9,6 +9,7 @@ import { AppData, Batch, MCQ } from '../types';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { TagStatsWidget } from '../components/TagStatsWidget';
+import BankFilterPanel from '../components/BankFilterPanel';
 
 const BankDashboard: React.FC = () => {
   const { 
@@ -21,9 +22,15 @@ const BankDashboard: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState('date-desc');
+  const [activeFilters, setActiveFilters] = useState<Record<string, any>>({
+    status: null,
+    difficulty: null,
+    tag: null
+  });
 
-  // Placeholder for filters state
-  // const [activeFilters, setActiveFilters] = useState({});
+  const handleFilterChange = (filterType: string, value: any) => {
+    setActiveFilters(prev => ({ ...prev, [filterType]: value }));
+  };
 
   const filteredQuestions = useMemo(() => {
     const allQuestionsWithBatchInfo = batches.flatMap((b: Batch) => b.questions.map((q: MCQ) => ({
@@ -36,7 +43,23 @@ const BankDashboard: React.FC = () => {
       q.explanation.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // TODO: Add logic for activeFilters here
+    if (activeFilters.tag) {
+      filtered = filtered.filter(q => (q.tags || []).includes(activeFilters.tag));
+    }
+    if (activeFilters.status) {
+      if (activeFilters.status === 'Answered') {
+        filtered = filtered.filter(q => q.lastAttemptCorrect !== null);
+      } else if (activeFilters.status === 'Unanswered') {
+        filtered = filtered.filter(q => q.lastAttemptCorrect === null);
+      } else if (activeFilters.status === 'Correct') {
+        filtered = filtered.filter(q => q.lastAttemptCorrect === true);
+      } else if (activeFilters.status === 'Incorrect') {
+        filtered = filtered.filter(q => q.lastAttemptCorrect === false);
+      }
+    }
+    if (activeFilters.difficulty) {
+      filtered = filtered.filter(q => q.difficulty === activeFilters.difficulty);
+    }
 
     const difficultyMap: any = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
 
@@ -59,7 +82,7 @@ const BankDashboard: React.FC = () => {
     });
 
     return filtered;
-  }, [batches, searchQuery, sortOrder]);
+  }, [batches, searchQuery, sortOrder, activeFilters]);
 
 
   const handleImportClick = () => {
@@ -147,7 +170,7 @@ const BankDashboard: React.FC = () => {
         </div>
       
         <div className="space-y-8">
-          <TagStatsWidget />
+          <TagStatsWidget onTagSelect={(tag) => handleFilterChange('tag', tag)} activeTag={activeFilters.tag} />
 
           {/* Main Content Area */}
           <main className="space-y-6">
@@ -175,6 +198,7 @@ const BankDashboard: React.FC = () => {
                     </SelectContent>
                 </Select>
             </div>
+            <BankFilterPanel onFilterChange={handleFilterChange} activeFilters={activeFilters} />
              <QuestionTreasuryWidget
                 questions={filteredQuestions}
               />
