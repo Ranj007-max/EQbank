@@ -19,18 +19,30 @@ const Dashboard: React.FC = () => {
     // Common classes for all bento box items for a consistent, premium feel
     const bentoBoxClasses = "glass-card p-4 md:p-6 rounded-2xl transition-all duration-300 ease-in-out hover:scale-[1.02] hover:shadow-bioluminescent-glow flex flex-col";
 
-    const welcomeAnimation = {
-      hidden: { opacity: 0, y: -20 },
-      visible: {
-        opacity: 1,
-        y: 0,
-        transition: {
-          type: 'spring',
-          damping: 15,
-          stiffness: 100,
-          delay: 0.2,
+    const welcomeAnimation: {
+        hidden: { opacity: number; y: number };
+        visible: {
+            opacity: number;
+            y: number;
+            transition: {
+                type: "spring";
+                damping: number;
+                stiffness: number;
+                delay: number;
+            };
+        };
+    } = {
+        hidden: { opacity: 0, y: -20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                type: 'spring',
+                damping: 15,
+                stiffness: 100,
+                delay: 0.2,
+            },
         },
-      },
     };
 
     // NOTE: A more dynamic suggestion could be implemented here later
