@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
-import { BookOpenCheck, Sun, Moon, LayoutDashboard, Library, BrainCircuit, PencilRuler, Search, ChevronLeft, User, Menu, PanelLeftClose } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { BookOpenCheck, Sun, Moon, LayoutDashboard, Library, BrainCircuit, PencilRuler, Search, ChevronLeft, User, Menu, PanelLeftClose, Bell } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { Button } from './ui/button';
 import { NavItem } from './NavItem';
@@ -27,6 +28,32 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const isExamMode = location.pathname.startsWith('/exam/session');
 
+  const title = "E-Qbank";
+  const titleVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const letterVariants = {
+    hidden: { opacity: 0, y: 10, scale: 0.8 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        type: "spring",
+        damping: 12,
+        stiffness: 100,
+      },
+    },
+  };
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -46,7 +73,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <aside className={`fixed lg:relative inset-y-0 left-0 z-50 w-full max-w-[280px] lg:max-w-none lg:w-auto transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out bg-black/10 backdrop-blur-lg border-r border-white/10 flex-col ${isExamMode ? 'hidden lg:flex' : 'flex'}`}>
           <div className={`flex items-center gap-2.5 px-4 h-20 border-b border-white/10 ${isDesktopSidebarCollapsed ? 'justify-center' : ''}`}>
               <BookOpenCheck className="h-7 w-7 text-primary" />
-              <h1 className={`text-xl font-bold tracking-tighter ${isDesktopSidebarCollapsed ? 'hidden' : 'block'}`}>E-Qbank</h1>
+              <motion.h1
+                variants={titleVariants}
+                initial="hidden"
+                animate="visible"
+                className={`text-xl font-bold tracking-tighter flex overflow-hidden ${isDesktopSidebarCollapsed ? 'hidden' : 'block'}`}
+              >
+                {title.split("").map((char, index) => (
+                  <motion.span key={index} variants={letterVariants} className="inline-block">
+                    {char}
+                  </motion.span>
+                ))}
+              </motion.h1>
           </div>
 
           <nav className="flex flex-col gap-1 p-4 flex-grow">
@@ -87,7 +125,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <Input placeholder="Global Search..." className="pl-10 neumorphic-input" />
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" aria-label="Notifications">
+                    <Bell />
+                </Button>
                 <Button variant="ghost" size="icon" aria-label="Profile">
                     <User />
                 </Button>

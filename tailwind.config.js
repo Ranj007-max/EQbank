@@ -64,6 +64,15 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        'deep-navy': '#0A0F1E',
+        'neon-blue': {
+          start: '#00BFFF',
+          end: '#007BFF',
+        },
+        'achievement': {
+          start: '#FFD700',
+          end: '#FF8C00',
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
