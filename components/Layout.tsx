@@ -40,18 +40,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     },
   };
 
-  const letterVariants = {
-    hidden: { opacity: 0, y: 10, scale: 0.8 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        type: "spring",
-        damping: 12,
-        stiffness: 100,
+  const letterVariants: {
+      hidden: { opacity: number; y: number; scale: number };
+      visible: {
+          opacity: number;
+          y: number;
+          scale: number;
+          transition: { type: "spring"; damping: number; stiffness: number };
+      };
+  } = {
+      hidden: { opacity: 0, y: 10, scale: 0.8 },
+      visible: {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          transition: {
+              type: "spring",
+              damping: 12,
+              stiffness: 100,
+          },
       },
-    },
   };
 
   const toggleSidebar = () => {
